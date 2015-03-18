@@ -1,5 +1,10 @@
 package team.xinyuan519.wxsearch.utils;
 
+/**
+ * 
+ * @author zhaoyi
+ *
+ */
 public class Node {
 	private double score;
 	private String collName;
