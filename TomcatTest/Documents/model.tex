@@ -1,0 +1,37 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\begin{document}
+\section{Notification}
+\begin{tabular}{|r|l|}
+\hline
+n & Number of accounts\\
+\hline
+m & Number of articles of an account\\
+\hline
+nw & Name Weight\\
+\hline
+tw & Title Weight\\
+\hline
+cw & Content Weight\\
+\hline
+\end{tabular} \\ 
+
+\section{Model Description}
+\begin{equation}
+I(string)=\begin{cases}
+1 & \text{$string$ contains $key$},\\
+0 & \text{$string$ contains no $key$}.
+\end{cases}\\
+\end{equation}
+\begin{equation}
+C(string)=\text{Number of word $key$ in $string$}\\
+\end{equation}
+
+\begin{equation}
+score=\sum_{i=1}^{m} (nw*I(name)+tw*I(title)+cw*C(content)) / m 
+\end{equation}
+
+
+\end{document}

@@ -21,7 +21,7 @@ public class Analyser {
 	 * The main method for test. Delete it if necessary.
 	 */
 	public static void main(String args[]) {
-		String key = "Æû³µ";
+		String key = "ï¿½ï¿½";
 		if (args.length == 2)
 			key = args[1];
 		Analyser ana = new Analyser();

@@ -1,0 +1,11 @@
+/build/
+*.class
+
+# LaTex temporary files
+*.aux
+*.dvi
+*.log
+
+# Ubuntu temporary files
+*~
+
