@@ -15,5 +15,8 @@
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mongo-java-driver-3.0.0-beta3-javadoc.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mongo-java-driver-3.0.0-beta3.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/json.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/htmllexer.jar"/>
+	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/htmlparser.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>

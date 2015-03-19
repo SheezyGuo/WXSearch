@@ -10,15 +10,15 @@
 <body>
 <%
 	String keyWords = request.getParameter("keyWords");
-// 	KeyWordsHandler handler = new KeyWordsHandler();
-// 	String result = handler.handle(keyWords);
-	Analyser analyser = new Analyser();
-	Node n = new Node();
-	Node[] nodes = analyser.analyse(keyWords);
-	for(Node node : nodes){
-		response.getWriter().write("<p>"+"微信号:"+node.getCollName()+"&nbsp;&nbsp;&nbsp;&nbsp;分数:<font color=\"red\">"+node.getScore()+"</font></p>");
-	}
-// 	response.getWriter().write(result);
+	Client client = new Client(keyWords,"localhost",4399,"utf-8");
+	String result = client.sendMsg();
+// 	Analyser analyser = new Analyser();
+// 	Node n = new Node();
+// 	Node[] nodes = analyser.analyse(keyWords);
+// 	for(Node node : nodes){
+// 		response.getWriter().write("<p>"+"微信号:"+node.getCollName()+"&nbsp;&nbsp;&nbsp;&nbsp;分数:<font color=\"red\">"+node.getScore()+"</font></p>");
+// 	}
+	response.getWriter().write(result);
 %>
 </body>
 </html>

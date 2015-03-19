@@ -1,11 +1,14 @@
-/build/
+TomcatTest/build/
 *.class
 
 # LaTex temporary files
 *.aux
 *.dvi
 *.log
+*.synctex.gz
 
 # Ubuntu temporary files
 *~
 
+# Git ignored file & path
+git_ignored/

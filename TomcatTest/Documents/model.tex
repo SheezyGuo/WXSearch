@@ -2,23 +2,42 @@
 
 \usepackage{amsmath}
 
+\usepackage{fontspec, xunicode, xltxtra}  
+\setmainfont{AR PL UKai CN}  
+
 \begin{document}
-\section{Notification}
+\section{符号}
 \begin{tabular}{|r|l|}
 \hline
-n & Number of accounts\\
+n & 微信号的数量\\
 \hline
-m & Number of articles of an account\\
+m & 一个微信号下文章的数量\\
 \hline
-nw & Name Weight\\
 \hline
-tw & Title Weight\\
+name & 微信号名，type:$string$\\
 \hline
-cw & Content Weight\\
+title & 文章名，type:$string[m]$\\
+\hline
+content & 文章内容，type:$string[m]$\\
+\hline
+r & 文章阅读数，type:$int[m]$\\
+\hline
+l & 文章点赞数，type:$int[m]$\\
+\hline
+\hline
+nw & 权重-微信号名，设置为 10\\
+\hline
+tw & 权重-文章名，设置为 15\\
+\hline
+cw & 权重-文章内容，设置为 1\\
+\hline
+rw & 权重-文章阅读数，设置为 1\\
+\hline
+lw & 权重-文章点赞数，设置为 0.3\\
 \hline
 \end{tabular} \\ 
 
-\section{Model Description}
+\section{模型描述}
 \begin{equation}
 I(string)=\begin{cases}
 1 & \text{$string$ contains $key$},\\
@@ -27,11 +46,16 @@ I(string)=\begin{cases}
 \end{equation}
 \begin{equation}
 C(string)=\text{Number of word $key$ in $string$}\\
-\end{equation}
+\end{equation}\\
 
+一篇文章的分数为：\\
 \begin{equation}
-score=\sum_{i=1}^{m} (nw*I(name)+tw*I(title)+cw*C(content)) / m 
-\end{equation}
+score_{(i)}=nw*I(name)+tw*I(title_{(i)})+cw*C(content_{(i)})
+\end{equation}\\
 
+一个微信号的最终得分为：\\
+\begin{equation}
+totle\_score=\frac{1}{m}\sum_{i=1}^{m} r_{(i)}^{rw}*l_{(i)}^{lw}*score_{(i)}
+\end{equation}
 
 \end{document}
