@@ -10,7 +10,7 @@
 <body>
 <%
 	String keyWords = request.getParameter("keyWords");
-	Client client = new Client(keyWords,"localhost",4399,"utf-8");
+	Client client = new Client(keyWords,"192.168.1.108",4399,"utf-8");
 	String result = client.sendMsg();
 // 	Analyser analyser = new Analyser();
 // 	Node n = new Node();

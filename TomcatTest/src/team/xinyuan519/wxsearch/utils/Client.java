@@ -67,8 +67,10 @@ public class Client implements Runnable {
 			}
 			System.out.println(response);
 		} catch (IOException e) {
+			e.printStackTrace();
 			System.err.println(e.getMessage());
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.err.println(e.getMessage());
 		} finally {
 			try {
@@ -119,8 +121,8 @@ public class Client implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		Client c = new Client(null, null, 0, null);
+		Client c = new Client("Hello", "192.168.1.108", 4399, "utf-8");
 		Thread t = new Thread(c);
-		t.start();
+		c.sendMsg();
 	}
 }
