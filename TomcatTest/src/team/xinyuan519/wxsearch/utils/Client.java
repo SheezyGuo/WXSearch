@@ -121,7 +121,7 @@ public class Client implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		Client c = new Client("Hello", "192.168.1.108", 4399, "utf-8");
+		Client c = new Client("Hello", "192.168.1.106", 4399, "utf-8");
 		Thread t = new Thread(c);
 		c.sendMsg();
 	}
