@@ -1,12 +1,13 @@
 package team.xinyuan519.wxsearch.utils;
+
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +16,6 @@ import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.util.NodeList;
-import org.htmlparser.util.ParserException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -64,7 +64,7 @@ public class JustInTimeCrawler {
 				Pattern pOpenid = Pattern
 						.compile("(?<=href=\"/gzh\\?openid=)(.*?)(?=\")");
 				Pattern pIdentity = Pattern
-						.compile("(?<=<span>ÂæÆ‰ø°Âè∑Ôºö)(.*?)(?=</span>)");
+						.compile("(?<=<span>Œ¢–≈∫≈£∫)(.*?)(?=</span>)");
 				for (int i = 0; i < nodeList.size(); i++) {
 					Node n = nodeList.elementAt(i);
 					String tmpStr = n.toHtml();
@@ -109,8 +109,8 @@ public class JustInTimeCrawler {
 		json = array.toString();
 		return json;
 	}
-	
-	public String getJsonInfo(String keyWords){
+
+	public String getJsonInfo(String keyWords) {
 		String result = null;
 		try {
 			result = infos2json(getDataByAccount(keyWords));
@@ -120,22 +120,34 @@ public class JustInTimeCrawler {
 		return result;
 	}
 
+	public void crawl(String jsonList) {
+		try {
+			JSONArray array = new JSONArray(jsonList);
+			WeiXinThread[] WXThreads = new WeiXinThread[array.length()];
+			for (int i = 0; i < array.length(); i++) {
+				JSONObject o = array.getJSONObject(i);
+				// System.out.println("Identity:"+o.getString("Identity")+"\tOpenID:"+o.getString("OpenID"));
+				WXThreads[i] = new WeiXinThread(o.getString("Identity"),
+						o.getString("OpenID"));
+			}
+			ExecutorService pool = Executors.newFixedThreadPool(10);
+			for (int i = 0; i < WXThreads.length; i++) {
+				WXThreads[i].setDbNameSuffix("_temp");
+				pool.execute(WXThreads[i]);
+			}
+			pool.shutdown();
+		} catch (JSONException e) {
+			System.out.println("Failed to get JSONArray");
+		}
+
+	}
+
 	public static void main(String[] args) {
 		JustInTimeCrawler j = new JustInTimeCrawler();
-		AccountInfo[] ai = j.getDataByAccount("ÊàêÈÉΩÁÅ´ÈîÖ");
-//		System.out.println("Size:" + String.valueOf(ai.length));
-//		for (int i = 0; i < ai.length; i++) {
-//			if (ai[i] != null) {
-//				System.out.println(ai[i].getOpenid() + "    "
-//						+ ai[i].getIdentity());
-//			} else {
-//				break;
-//			}
-//		}
+		AccountInfo[] ai = j.getDataByAccount("≥…∂ºªπ¯");
 		try {
-			System.out.println(j.infos2json(ai));
+			j.crawl(j.infos2json(ai));
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

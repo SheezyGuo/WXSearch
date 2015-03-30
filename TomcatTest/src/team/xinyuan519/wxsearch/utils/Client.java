@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
-public class Client implements Runnable {
+public class Client {
 	private final String END_MARK = "#end";
 	private final String SEPERATOR = "&AND&";
 	private String msg;
@@ -36,6 +37,7 @@ public class Client implements Runnable {
 
 			JustInTimeCrawler jitc = new JustInTimeCrawler();
 			String accountInfo = jitc.getJsonInfo(msg);
+			jitc.crawl(accountInfo);
 			if (accountInfo == null) {
 				throw new Exception("Got no extra account info");
 			}
@@ -94,35 +96,8 @@ public class Client implements Runnable {
 		return sendCustomizedMsg(msg, ip, port, charset);
 	}
 
-	@Override
-	public void run() {
-		// JSONObject jsonObject = new JSONObject();
-		// JSONArray jsonArray = new JSONArray();
-		// try {
-		// jsonObject.append("Title", "title").append("Content", "content")
-		// .append("Date", "date").append("Time", "time");
-		// jsonArray.put(jsonObject);
-		// jsonArray.put(jsonObject);
-		// } catch (JSONException e1) {
-		// // TODO Auto-generated catch block
-		// e1.printStackTrace();
-		// }
-		//
-		// for (int i = 0; i < 5; i++) {
-		// sendCustomizedMsg(jsonArray.toString() + "#end", "localhost", 4399,
-		// "utf-8");
-		// try {
-		// Thread.sleep(3 * 1000);
-		// } catch (InterruptedException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		// }
-	}
-
 	public static void main(String[] args) {
-		Client c = new Client("Hello", "192.168.1.106", 4399, "utf-8");
-		Thread t = new Thread(c);
+		Client c = new Client("ку╥ф", "192.168.1.175", 4399, "utf-8");
 		c.sendMsg();
 	}
 }
