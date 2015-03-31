@@ -97,7 +97,7 @@ public class Client {
 	}
 
 	public static void main(String[] args) {
-		Client c = new Client("ËÕ·Æ", "192.168.1.175", 4399, "utf-8");
+		Client c = new Client("è‹è²", "192.168.1.175", 4399, "utf-8");
 		c.sendMsg();
 	}
 }

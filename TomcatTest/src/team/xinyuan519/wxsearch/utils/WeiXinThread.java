@@ -38,8 +38,13 @@ public class WeiXinThread implements Runnable {
 	private String dbNameSuffix;
 	private WebDriver driver = null;
 
-	private final String PhantomJSExecutablePath = "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
-	private final String ParametersFilePath = "D:\\rawURL.txt";
+// 	on Windows	
+//	private final String PhantomJSExecutablePath = "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
+//	private final String ParametersFilePath = "D:\\rawURL.txt";
+	
+// on Linux
+	private final String PhantomJSExecutablePath ="/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
+	private final String ParametersFilePath = "/home/dtlvhyy/rawURL";
 
 	public WeiXinThread(String identity, String openid) {
 		this.identity = identity;
@@ -47,10 +52,11 @@ public class WeiXinThread implements Runnable {
 		this.pl = new ProfileInfos(identity, openid);
 		this.dbNameSuffix = "";
 	}
-	
-	public void setDbNameSuffix(String suffix){
+
+	public void setDbNameSuffix(String suffix) {
 		this.dbNameSuffix = suffix;
 	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -61,7 +67,7 @@ public class WeiXinThread implements Runnable {
 
 		Queue<String> qs = pl.getLinkList();
 		if (qs == null) {
-			System.out.println(String.format("openidÎª%sµÄ¹«ÖÚºÅÊ×Ò³:%s²»ÄÜ´ò¿ª!", openid,
+			System.out.println(String.format("openidä¸º%sçš„å…¬ä¼—å·é¦–é¡µ:%sä¸èƒ½æ‰“å¼€!", openid,
 					"http://weixin.sogou.com/gzh?openid=" + openid));
 			return;
 		}
@@ -84,13 +90,13 @@ public class WeiXinThread implements Runnable {
 				String targetUrl = qs.poll();
 				// int Flag = 5;
 				int Flag = 1;
-				// Íê³É±êÊ¶Î» ÈôÎŞÒì³£ ÇÒlikeNumºÍreadNumÎª·Ç¿Õ×Ö·ûÔòÖÃÎª0 ·ñÔòÖØĞÂÅÀÈ¡
-				// ·ÀÖ¹ÒòkeyºÍuin¹ıÆÚ»ò³öÏÖÒì³£Ôì³ÉÒÅÂ©
+				// å®Œæˆæ ‡è¯†ä½ è‹¥æ— å¼‚å¸¸ ä¸”likeNumå’ŒreadNumä¸ºéç©ºå­—ç¬¦åˆ™ç½®ä¸º0 å¦åˆ™é‡æ–°çˆ¬å–
+				// é˜²æ­¢å› keyå’Œuinè¿‡æœŸæˆ–å‡ºç°å¼‚å¸¸é€ æˆé—æ¼
 				while (Flag > 0) {
 					try {
 						String newUrl = null;
 						// p.setPatameters(ParametersFilePath); //
-						// Ë¢ĞÂpÀïkeyºÍuinµÄÄÚÈİ
+						// åˆ·æ–°pé‡Œkeyå’Œuinçš„å†…å®¹
 						newUrl = getNewUrl(targetUrl, p);
 
 						driver.get(newUrl);
@@ -99,7 +105,7 @@ public class WeiXinThread implements Runnable {
 						String title = null;
 						title = driver.getTitle();
 
-						// »ñÈ¡Ò»ÆªÎÄÕÂµÄ±êÌâ
+						// è·å–ä¸€ç¯‡æ–‡ç« çš„æ ‡é¢˜
 						// String WebSource = driver.getPageSource();
 						// Pattern titlePattern = Pattern
 						// .compile("(?<=var msg_title = \")(.*?)(?=\";)");
@@ -144,7 +150,7 @@ public class WeiXinThread implements Runnable {
 
 						String likeNum = null;
 						likeNum = driver.findElement(By.id("likeNum"))
-								.getText().replace("ÔŞ", "0");
+								.getText().replace("èµ", "0");
 						// System.out.println("likeNum:" + likeNum);
 
 						String date = null;
@@ -161,8 +167,10 @@ public class WeiXinThread implements Runnable {
 						// System.out.println("MD5:" + MD5);
 
 						Mongo mongo = new Mongo("localhost", 27017);
-						DB historyDB = mongo.getDB("WeiXinHistory"+this.dbNameSuffix);// ÀúÊ·Êı¾İ¿â
-						DB freshDB = mongo.getDB("WeiXinFresh"+this.dbNameSuffix); // ×îĞÂÊı¾İ¿â
+						DB historyDB = mongo.getDB("WeiXinHistory"
+								+ this.dbNameSuffix);// å†å²æ•°æ®åº“
+						DB freshDB = mongo.getDB("WeiXinFresh"
+								+ this.dbNameSuffix); // æœ€æ–°æ•°æ®åº“
 						DBCollection historyColl = historyDB
 								.getCollection(this.identity);
 						DBCollection freshColl = freshDB
@@ -219,21 +227,22 @@ public class WeiXinThread implements Runnable {
 							} else {
 								freshColl.insert(article);
 							}
-							DB db = mongo.getDB("AccountInfo"+this.dbNameSuffix);
+							DB db = mongo.getDB("AccountInfo"
+									+ this.dbNameSuffix);
 							DBCollection infoColl = db
 									.getCollection("accountInfo");
-							BasicDBObject query2 = new BasicDBObject("Name",
-									pl.getName());
-							BasicDBObject item = new BasicDBObject();
-							item.append("Name", pl.getName())
-									.append("Identity", pl.getIdentity())
-									.append("Info", pl.getInfo())
-									.append("OpenID", pl.getOpenid())
-									.append("WebUrl", pl.getWebURL());
+							BasicDBObject query2 = new BasicDBObject("OpenID",
+									pl.getOpenid());
 							DBCursor cursor2 = infoColl.find(query2);
 							if (cursor2.hasNext()) {
 								;
 							} else {
+								BasicDBObject item = new BasicDBObject();
+								item.append("Name", pl.getName())
+										.append("Identity", pl.getIdentity())
+										.append("Info", pl.getInfo())
+										.append("OpenID", pl.getOpenid())
+										.append("WebUrl", pl.getWebURL());
 								infoColl.insert(item);
 							}
 							mongo.close();
@@ -256,7 +265,7 @@ public class WeiXinThread implements Runnable {
 					} catch (MongoException e) {
 						e.printStackTrace();
 					} catch (NoSuchElementException e) {
-						System.err.println(targetUrl + "Î´ÄÜÕÒ³öÔªËØ"
+						System.err.println(targetUrl + "æœªèƒ½æ‰¾å‡ºå…ƒç´ "
 								+ e.getMessage());
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -296,7 +305,7 @@ public class WeiXinThread implements Runnable {
 
 	public static String getNewUrl(String rawUrl, Parameters p) {
 		if (p == null || p.getKey() == null || p.getUin() == null) {
-			System.out.println("»ñÈ¡Key»òUinÊ§°Ü");
+			System.out.println("è·å–Keyæˆ–Uinå¤±è´¥");
 			return null;
 		}
 		String newUrl;

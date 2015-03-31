@@ -1,4 +1,4 @@
 
-def analyze(keyWords):
+def analyse(keyWords):
 	print "do",keyWords
 	return keyWords

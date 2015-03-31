@@ -13,11 +13,11 @@ import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class ProfileInfos {
-	private String name; // Î¢ĞÅÃû
-	private String identity; // Î¢ĞÅºÅ
+	private String name; // å¾®ä¿¡å
+	private String identity; // å¾®ä¿¡å·
 	private String openid; // openid
 	private String info;
-	private String WebURL; // Î¢ĞÅËÑË÷¹«ÖÚºÅÊ×Ò³µØÖ·
+	private String WebURL; // å¾®ä¿¡æœç´¢å…¬ä¼—å·é¦–é¡µåœ°å€
 
 	public String getName() {
 		return name;
@@ -41,7 +41,8 @@ public class ProfileInfos {
 
 	// private final String encode = "utf-8";
 
-	private final String PhantomJSExecutablePath = "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
+//	private final String PhantomJSExecutablePath = "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
+	private final String PhantomJSExecutablePath ="/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
 
 	public ProfileInfos(String identity, String openid) {
 		this.identity = identity;
@@ -113,7 +114,7 @@ public class ProfileInfos {
 								+ "<h3 id=\"weixinname\">".length(),
 						HTMLCode.indexOf("</h3>",
 								HTMLCode.indexOf("<h3 id=\"weixinname\">")));
-//				System.out.println(name);
+				// System.out.println(name);
 			}
 			if (HTMLCode.contains("<span class=\"sp-txt\">")) {
 
@@ -122,7 +123,7 @@ public class ProfileInfos {
 								+ "<span class=\"sp-txt\">".length(),
 						HTMLCode.indexOf("</span>",
 								HTMLCode.indexOf("<span class=\"sp-txt\">")));
-//				System.out.println(info);
+				// System.out.println(info);
 			}
 
 			this.name = name;

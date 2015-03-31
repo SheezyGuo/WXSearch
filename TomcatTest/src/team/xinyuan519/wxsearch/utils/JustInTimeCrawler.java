@@ -64,7 +64,7 @@ public class JustInTimeCrawler {
 				Pattern pOpenid = Pattern
 						.compile("(?<=href=\"/gzh\\?openid=)(.*?)(?=\")");
 				Pattern pIdentity = Pattern
-						.compile("(?<=<span>Œ¢–≈∫≈£∫)(.*?)(?=</span>)");
+						.compile("(?<=<span>ÂæÆ‰ø°Âè∑Ôºö)(.*?)(?=</span>)");
 				for (int i = 0; i < nodeList.size(); i++) {
 					Node n = nodeList.elementAt(i);
 					String tmpStr = n.toHtml();
@@ -144,7 +144,7 @@ public class JustInTimeCrawler {
 
 	public static void main(String[] args) {
 		JustInTimeCrawler j = new JustInTimeCrawler();
-		AccountInfo[] ai = j.getDataByAccount("≥…∂ºªπ¯");
+		AccountInfo[] ai = j.getDataByAccount("ÊàêÈÉΩÁÅ´ÈîÖ");
 		try {
 			j.crawl(j.infos2json(ai));
 		} catch (JSONException e) {

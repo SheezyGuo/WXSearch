@@ -53,7 +53,7 @@ public class Parameters {
 			else{
 				this.setKey(null);
 				this.setUin(null);
-				System.out.println(String.format("»ñÈ¡²ÎÊıÊ§°Ü£¬Çë¼ì²éÎÄ¼ş%s ÀïµÄÄÚÈİ",filePath));
+				System.out.println(String.format("è·å–å‚æ•°å¤±è´¥ï¼Œè¯·æ£€æŸ¥æ–‡ä»¶%s é‡Œçš„å†…å®¹",filePath));
 			}
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
