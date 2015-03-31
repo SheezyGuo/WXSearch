@@ -38,12 +38,13 @@ public class WeiXinThread implements Runnable {
 	private String dbNameSuffix;
 	private WebDriver driver = null;
 
-// 	on Windows	
-//	private final String PhantomJSExecutablePath = "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
-//	private final String ParametersFilePath = "D:\\rawURL.txt";
-	
-// on Linux
-	private final String PhantomJSExecutablePath ="/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
+	// on Windows
+	// private final String PhantomJSExecutablePath =
+	// "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
+	// private final String ParametersFilePath = "D:\\rawURL.txt";
+
+	// on Linux
+	private final String PhantomJSExecutablePath = "/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
 	private final String ParametersFilePath = "/home/dtlvhyy/rawURL";
 
 	public WeiXinThread(String identity, String openid) {
@@ -150,7 +151,12 @@ public class WeiXinThread implements Runnable {
 
 						String likeNum = null;
 						likeNum = driver.findElement(By.id("likeNum"))
-								.getText().replace("赞", "0");
+								.getText();
+						try {
+							likeNum = String.valueOf(Integer.valueOf(likeNum));
+						} catch (NumberFormatException e) {
+							likeNum = String.valueOf(0);
+						}
 						// System.out.println("likeNum:" + likeNum);
 
 						String date = null;
@@ -324,5 +330,12 @@ public class WeiXinThread implements Runnable {
 				"oIWsFtxK3-RIHp4VizC1BUioKtdE");
 		Thread t = new Thread(wxt);
 		t.start();
+		// String likeNum = "123Like";
+		// try {
+		// likeNum = String.valueOf(Integer.valueOf(likeNum));
+		// } catch (NumberFormatException e) {
+		// likeNum = String.valueOf(0);
+		// }
+		// System.out.println(likeNum);
 	}
 }
