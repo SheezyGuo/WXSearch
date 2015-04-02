@@ -22,7 +22,7 @@ import org.json.JSONObject;
 
 public class JustInTimeCrawler {
 
-	public AccountInfo[] getDataByAccount(String keyWords) {
+	private AccountInfo[] getDataByAccount(String keyWords) {
 		final int MAX_PAGE_NUM = 1;
 		AccountInfo[] infos = new AccountInfo[10 * MAX_PAGE_NUM];
 		int infosCount = 0;
@@ -93,15 +93,19 @@ public class JustInTimeCrawler {
 		return infos;
 	}
 
-	public String infos2json(AccountInfo[] ai) throws JSONException {
+	private String infos2json(AccountInfo[] ai) {
 		String json = null;
 		JSONArray array = new JSONArray();
 		for (int i = 0; i < ai.length; i++) {
 			if (ai[i] != null) {
 				JSONObject object = new JSONObject();
-				object.put("OpenID", ai[i].getOpenid());
-				object.put("Identity", ai[i].getIdentity());
-				array.put(object);
+				try {
+					object.put("OpenID", ai[i].getOpenid());
+					object.put("Identity", ai[i].getIdentity());
+					array.put(object);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 			} else {
 				break;
 			}
@@ -112,11 +116,7 @@ public class JustInTimeCrawler {
 
 	public String getJsonInfo(String keyWords) {
 		String result = null;
-		try {
-			result = infos2json(getDataByAccount(keyWords));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		result = infos2json(getDataByAccount(keyWords));
 		return result;
 	}
 
@@ -141,14 +141,14 @@ public class JustInTimeCrawler {
 		}
 
 	}
+	
+	public void crawlTempData(AccountInfo[] infos){
+		
+	}
 
 	public static void main(String[] args) {
 		JustInTimeCrawler j = new JustInTimeCrawler();
 		AccountInfo[] ai = j.getDataByAccount("成都火锅");
-		try {
-			j.crawl(j.infos2json(ai));
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		System.out.println(j.infos2json(ai));
 	}
 }

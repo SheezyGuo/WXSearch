@@ -32,7 +32,7 @@ import com.mongodb.MongoException;
 
 public class WeiXinThread implements Runnable {
 
-	private ProfileInfos pl;
+	private ProfileInfo pl;
 	private String identity;
 	private String openid;
 	private String dbNameSuffix;
@@ -50,7 +50,7 @@ public class WeiXinThread implements Runnable {
 	public WeiXinThread(String identity, String openid) {
 		this.identity = identity;
 		this.openid = openid;
-		this.pl = new ProfileInfos(identity, openid);
+		this.pl = new ProfileInfo(identity, openid);
 		this.dbNameSuffix = "";
 	}
 
@@ -66,7 +66,7 @@ public class WeiXinThread implements Runnable {
 	@Override
 	public void run() {
 
-		Queue<String> qs = pl.getLinkList();
+		Queue<String> qs = pl.getLinkListByPhantomJS();
 		if (qs == null) {
 			System.out.println(String.format("openid为%s的公众号首页:%s不能打开!", openid,
 					"http://weixin.sogou.com/gzh?openid=" + openid));
