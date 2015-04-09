@@ -3,7 +3,6 @@ package team.xinyuan519.wxsearch.utils;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
@@ -266,8 +265,6 @@ public class WeiXinThread implements Runnable {
 								driver = new PhantomJSDriver(service, cap);
 							}
 						}
-					} catch (UnknownHostException e) {
-						e.printStackTrace();
 					} catch (MongoException e) {
 						e.printStackTrace();
 					} catch (NoSuchElementException e) {

@@ -29,6 +29,7 @@ public class ProfileInfo {
 	private String openid; // openid
 	private String info;
 	private String WebURL; // 微信搜索公众号首页地址
+	private Queue<String> linkList;
 	private final String charset = "utf-8";
 
 	public String getName() {
@@ -50,12 +51,16 @@ public class ProfileInfo {
 	public String getWebURL() {
 		return WebURL;
 	}
-
+	
+	public Queue<String> getLinkList(){
+		return linkList;
+	}
 	// private final String encode = "utf-8";
 
+	private final String PhantomJSExecutablePath = "D:\\phantomjs.exe";
+
 	// private final String PhantomJSExecutablePath =
-	// "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
-	private final String PhantomJSExecutablePath = "/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
+	// "/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
 
 	public ProfileInfo(String identity, String openid) {
 		this.identity = identity;
@@ -188,7 +193,7 @@ public class ProfileInfo {
 
 		this.name = name;
 		this.info = info;
-
+		this.linkList = queue;
 		return queue;
 
 	}
@@ -232,9 +237,14 @@ public class ProfileInfo {
 
 		this.name = name;
 		this.info = info;
-
+		this.linkList = queue;
+		
 		return queue;
 
+	}
+	
+	public void init(){
+		this.getLinkListByPhantomJS();
 	}
 
 	public static void main(String[] args) {
@@ -245,12 +255,12 @@ public class ProfileInfo {
 		// System.out.println("Url:" + qs.poll());
 		// }
 
-		 System.out.println(pl.getHTMLCodeByHttp());
-		 long start = Calendar.getInstance().getTimeInMillis();
-		 pl.getHTMlCodeByPhantomJS();
-		 System.out.println(Calendar.getInstance().getTimeInMillis() - start);
-		 start = Calendar.getInstance().getTimeInMillis();
-		 pl.getLinkListByHttpunit();
-		 System.out.println(Calendar.getInstance().getTimeInMillis() - start);
+		System.out.println(pl.getHTMLCodeByHttp());
+		long start = Calendar.getInstance().getTimeInMillis();
+		pl.getHTMlCodeByPhantomJS();
+		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
+		start = Calendar.getInstance().getTimeInMillis();
+		pl.getLinkListByHttpunit();
+		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
 	}
 }

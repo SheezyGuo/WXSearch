@@ -42,7 +42,6 @@
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jna-3.4.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/jna-platform-3.4.0.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/junit-dep-4.11.jar"/>
-	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/mongo-java-driver-2.5.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/nekohtml-1.9.21.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/netty-3.5.7.Final.jar"/>
 	<classpathentry kind="lib" path="WebContent/WEB-INF/lib/operadriver-1.5.jar"/>

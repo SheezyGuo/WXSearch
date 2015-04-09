@@ -8,149 +8,41 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
-import java.util.Queue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.HasAttributeFilter;
 import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
-import com.sun.javafx.binding.MapExpressionHelper.SimpleChange;
 
-public class SimpleInfoCrawler {
-	private String keyWords;
+public class SimpleInfoCrawler implements Runnable {
+	private String targetUrl;
 	private String dbIP; // remote host IP
 	private int dbPort; // remove host port
+	private ProfileInfo profileInfo;
 	private final String charset = "utf-8";
 	private final String dbNameSuffix = "_temp";
 	final String urlHeader = "http://weixin.sogou.com/gzh?openid=";
+	private static final Object lock = new Object();
 
-	public SimpleInfoCrawler(String keyWords, String dbIP, int dbPort) {
+	public SimpleInfoCrawler(String targetUrl, String dbIP, int dbPort,
+			ProfileInfo profileInfo) {
 		super();
-		this.keyWords = keyWords;
+		this.targetUrl = targetUrl;
 		this.dbIP = dbIP;
 		this.dbPort = dbPort;
+		this.profileInfo = profileInfo;
 	}
-
-	private AccountInfo[] getInfo(String keyWords) {
-		final int MAX_PAGE_NUM = 1;
-		AccountInfo[] infos = new AccountInfo[10 * MAX_PAGE_NUM];
-		int infosCount = 0;
-		String UTF8keyWords = null;
-		try {
-			UTF8keyWords = URLEncoder.encode(keyWords, "utf-8");
-		} catch (UnsupportedEncodingException e) {
-			System.err.println(e.getMessage());
-		}
-		for (int pageNum = 1; pageNum <= MAX_PAGE_NUM; pageNum++) {
-			try {
-				String WXAccountUrlHeader = String
-						.format("http://weixin.sogou.com/weixin?query=%s&type=1&page=%d&ie=utf8",
-								UTF8keyWords, pageNum);
-				System.out.println(WXAccountUrlHeader);
-				URL url = new URL(WXAccountUrlHeader);
-				HttpURLConnection conn = (HttpURLConnection) url
-						.openConnection();
-				conn.setConnectTimeout(30000);
-				conn.setRequestProperty(
-						"User-agent",
-						"Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:2.0b9pre) Gecko/20101228 Firefox/4.0b9pre");
-				conn.setRequestProperty("Accept-Charset", "utf-8");
-				conn.connect();
-				if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-					throw new Exception("HTTP Response is not HTTP_OK");
-				}
-				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(conn.getInputStream(), "utf-8"));
-				String html = "";
-				String line = "";
-				while ((line = reader.readLine()) != null) {
-					html += line + "\n";
-				}
-				System.out.println(html);
-				conn.disconnect();
-				Parser parser = Parser.createParser(html, "utf-8");
-				NodeFilter filter = new HasAttributeFilter("class",
-						"wx-rb bg-blue wx-rb_v1 _item");
-				NodeList nodeList = parser.extractAllNodesThatMatch(filter);
-				Pattern pOpenid = Pattern
-						.compile("(?<=href=\"/gzh\\?openid=)(.*?)(?=\")");
-				Pattern pIdentity = Pattern
-						.compile("(?<=<span>微信号：)(.*?)(?=</span>)");
-				for (int i = 0; i < nodeList.size(); i++) {
-					Node n = nodeList.elementAt(i);
-					String tmpStr = n.toHtml();
-					String openid = null;
-					String identity = null;
-					Matcher mOpenid = pOpenid.matcher(tmpStr);
-					Matcher mIdentity = pIdentity.matcher(tmpStr);
-					if (mOpenid.find()) {
-						openid = mOpenid.group();
-					}
-					if (mIdentity.find()) {
-						identity = mIdentity.group();
-					}
-					if (openid == null || identity == null) {
-						System.err.println("missed an openid or identity");
-						continue;
-					} else {
-						infos[infosCount++] = new AccountInfo(openid, identity);
-					}
-				}
-			} catch (Exception e) {
-				System.err.println(e.getMessage());
-				return null;
-			}
-		}
-		return infos;
-	}
-
-	private String infos2json(AccountInfo[] ai) {
-		String json = null;
-		JSONArray array = new JSONArray();
-		for (int i = 0; i < ai.length; i++) {
-			if (ai[i] != null) {
-				JSONObject object = new JSONObject();
-				try {
-					object.put("OpenID", ai[i].getOpenid());
-					object.put("Identity", ai[i].getIdentity());
-					array.put(object);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			} else {
-				break;
-			}
-		}
-		json = array.toString();
-		return json;
-	}
-
-	// public String getJsonInfo(String keyWords) {
-	// String result = null;
-	// result = infos2json(getInfo(keyWords));
-	// return result;
-	// }
 
 	private String getHtmlCode(String targetUrl) {
 		String HTMLCode = "";
@@ -191,7 +83,8 @@ public class SimpleInfoCrawler {
 		NodeFilter filter = new TagNameFilter("title");
 		try {
 			NodeList list = parser.extractAllNodesThatMatch(filter);
-			title = list.elementAt(0).toPlainTextString();
+			title = list.elementAt(0).toPlainTextString()
+					.replaceAll("&nbsp;", " ").replaceAll("&quot;", "\"");
 		} catch (ParserException e) {
 			e.printStackTrace();
 		}
@@ -205,7 +98,8 @@ public class SimpleInfoCrawler {
 		try {
 			NodeList list = parser.extractAllNodesThatMatch(filter);
 			content = list.elementAt(0).toPlainTextString();
-			content = content.replaceAll("&quot;", "\"");
+			content = content.replaceAll("&nbsp;", " ").replaceAll("&quot;",
+					"\"");
 		} catch (ParserException e) {
 			e.printStackTrace();
 		}
@@ -225,8 +119,8 @@ public class SimpleInfoCrawler {
 		return date;
 	}
 
-	private String getUrl(String url) {
-		return url;
+	private String getUrl() {
+		return this.targetUrl;
 	}
 
 	private String getMD5(String input) {
@@ -261,123 +155,90 @@ public class SimpleInfoCrawler {
 		return milliseconds;
 	}
 
-	public String crawlSimpleInfo() {
+	public void crawlSimpleInfo() {
+		String htmlCode = getHtmlCode(this.targetUrl);
+		Parser parser = Parser.createParser(htmlCode, charset);
+		String content = getContent(parser);
+		DbItem item = new DbItem(getTitle(parser), content, getDate(htmlCode),
+				null, null, getUrl(), getMD5(content), getTime(),
+				getMilliseconds());
 
-		AccountInfo[] accountInfos = getInfo(this.keyWords);
-		int steps = accountInfos.length;
-		for (int step = 0; step < steps; step++) {
-			ProfileInfo profileInfo = new ProfileInfo(
-					accountInfos[step].getIdentity(),
-					accountInfos[step].getOpenid());
-			Queue<String> links = profileInfo.getLinkListByPhantomJS();
-			int length = links.size();
-			DbItem[] items = new DbItem[length];
-			ExecutorService pool = Executors.newFixedThreadPool(10);
-			for (int i = 0; i < length; i++) {
-				String url = links.poll();
-				CrawlThread ct = new CrawlThread(url, items, i);
-				pool.execute(ct);
+		MongoClient client = new MongoClient(dbIP, dbPort);
+		@SuppressWarnings("deprecation")
+		DB historyDB = client.getDB("WeiXinHistory" + this.dbNameSuffix);// 历史数据库
+		@SuppressWarnings("deprecation")
+		DB freshDB = client.getDB("WeiXinFresh" + this.dbNameSuffix); // 最新数据库
+		DBCollection historyColl = historyDB.getCollection(profileInfo
+				.getIdentity());
+		DBCollection freshColl = freshDB.getCollection(profileInfo
+				.getIdentity());
+
+		BasicDBObject article = new BasicDBObject();
+		article.append("Title", item.getTitle());
+		article.append("Content", item.getContent());
+		article.append("Date", item.getDate());
+		article.append("ReadNum", item.getReadNum());
+		article.append("LikeNum", item.getLikeNum());
+		article.append("Url", item.getUrl());
+		article.append("MD5", item.getMD5());
+		article.append("Time", item.getTime());
+		article.append("Milliseconds", item.getMilliseconds());
+		historyColl.insert(article);
+
+		synchronized (lock) {
+			BasicDBObject query = new BasicDBObject("MD5", item.getMD5());
+			DBCursor cursor = freshColl.find(query);
+			if (cursor.hasNext()) {
+				BasicDBObject updateValue = new BasicDBObject();
+				updateValue.append("Title", item.getTitle());
+				updateValue.append("Content", item.getContent());
+				updateValue.append("Date", item.getDate());
+				updateValue.append("ReadNum", item.getReadNum());
+				updateValue.append("LikeNum", item.getLikeNum());
+				updateValue.append("Url", item.getUrl());
+				updateValue.append("MD5", item.getMD5());
+				updateValue.append("Time", item.getTime());
+				updateValue.append("Milliseconds", item.getMilliseconds());
+				BasicDBObject updateSetValue = new BasicDBObject("$set",
+						updateValue);
+				freshColl.update(query, updateSetValue);
+			} else {
+				freshColl.insert(article);
 			}
-			pool.shutdown();
-			try {
-				pool.awaitTermination(30, TimeUnit.SECONDS);
-			} catch (InterruptedException e) {
+
+			@SuppressWarnings("deprecation")
+			DB db = client.getDB("AccountInfo" + this.dbNameSuffix);
+			DBCollection infoColl = db.getCollection("accountInfo");
+			BasicDBObject query2 = new BasicDBObject("OpenID",
+					profileInfo.getOpenid());
+			DBCursor cursor2 = infoColl.find(query2);
+			if (cursor2.hasNext()) {
 				;
+			} else {
+				BasicDBObject account = new BasicDBObject();
+				account.append("Name", profileInfo.getName())
+						.append("Identity", profileInfo.getIdentity())
+						.append("Info", profileInfo.getInfo())
+						.append("OpenID", profileInfo.getOpenid())
+						.append("WebUrl", profileInfo.getWebURL());
+				infoColl.insert(account);
 			}
-
-			MongoClient client = new MongoClient(dbIP, dbPort);
-			for (int i = 0; i < length; i++) {
-				DB historyDB = client
-						.getDB("WeiXinHistory" + this.dbNameSuffix);// 历史数据库
-				DB freshDB = client.getDB("WeiXinFresh" + this.dbNameSuffix); // 最新数据库
-				DBCollection historyColl = historyDB.getCollection(profileInfo
-						.getIdentity());
-				DBCollection freshColl = freshDB.getCollection(profileInfo
-						.getIdentity());
-
-				BasicDBObject article = new BasicDBObject();
-				article.append("Title", items[i].getTitle());
-				article.append("Content", items[i].getContent());
-				article.append("Date", items[i].getDate());
-				article.append("ReadNum", items[i].getReadNum());
-				article.append("LikeNum", items[i].getLikeNum());
-				article.append("Url", items[i].getUrl());
-				article.append("MD5", items[i].getMD5());
-				article.append("Time", items[i].getTime());
-				article.append("Milliseconds", items[i].getMilliseconds());
-				historyColl.insert(article);
-
-				BasicDBObject query = new BasicDBObject("MD5",
-						items[i].getMD5());
-				DBCursor cursor = freshColl.find(query);
-				if (cursor.hasNext()) {
-					BasicDBObject updateValue = new BasicDBObject();
-					updateValue.append("Title", items[i].getTitle());
-					updateValue.append("Content", items[i].getContent());
-					updateValue.append("Date", items[i].getDate());
-					updateValue.append("ReadNum", items[i].getReadNum());
-					updateValue.append("LikeNum", items[i].getLikeNum());
-					updateValue.append("Url", items[i].getUrl());
-					updateValue.append("MD5", items[i].getMD5());
-					updateValue.append("Time", items[i].getTime());
-					updateValue.append("Milliseconds",
-							items[i].getMilliseconds());
-					BasicDBObject updateSetValue = new BasicDBObject("$set",
-							updateValue);
-					freshColl.update(query, updateSetValue);
-				} else {
-					freshColl.insert(article);
-				}
-				DB db = client.getDB("AccountInfo" + this.dbNameSuffix);
-				DBCollection infoColl = db.getCollection("accountInfo");
-				BasicDBObject query2 = new BasicDBObject("OpenID",
-						profileInfo.getOpenid());
-				DBCursor cursor2 = infoColl.find(query2);
-				if (cursor2.hasNext()) {
-					;
-				} else {
-					BasicDBObject item = new BasicDBObject();
-					item.append("Name", profileInfo.getName())
-							.append("Identity", profileInfo.getIdentity())
-							.append("Info", profileInfo.getInfo())
-							.append("OpenID", profileInfo.getOpenid())
-							.append("WebUrl", profileInfo.getWebURL());
-					infoColl.insert(item);
-				}
-			}
-			client.close();
 		}
-		return infos2json(accountInfos);
+		client.close();
 	}
 
-	private class CrawlThread implements Runnable {
-		private String url;
-		private DbItem[] items;
-		private int index;
-
-		public CrawlThread(String url, DbItem[] items, int index) {
-			this.url = url;
-			this.items = items;
-			this.index = index;
-		}
-
-		@Override
-		public void run() {
-			String htmlCode = getHtmlCode(url);
-			Parser parser = Parser.createParser(htmlCode, charset);
-			String content = getContent(parser);
-			DbItem item = new DbItem(getTitle(parser), content,
-					getDate(htmlCode), null, null, url, getMD5(content),
-					getTime(), getMilliseconds());
-			items[index] = item;
-		}
-
+	@Override
+	public void run() {
+		crawlSimpleInfo();
 	}
 
 	public static void main(String[] args) {
-		SimpleInfoCrawler sic = new SimpleInfoCrawler("苏菲", "localhost", 4399);
-		AccountInfo[] infos = sic.getInfo("苏菲");
-		infos[0].getIdentity();
-		// sic.crawlSimpleInfo();
+		ProfileInfo profileInfo = new ProfileInfo("gh_c5983b1900ea",
+				"oIWsFt__ri8LG3IniUySdMV13M-s");
+		profileInfo.init();
+		SimpleInfoCrawler crawler = new SimpleInfoCrawler(
+				"http://mp.weixin.qq.com/s?__biz=MjM5Njc5MjQwMQ==&mid=204701500&idx=1&sn=bd1d48cadb5361193102c5dc406785bb&3rd=MzA3MDU4NTYzMw==&scene=6#rd",
+				"localhost", 27017, profileInfo);
+		crawler.crawlSimpleInfo();
 	}
 }
