@@ -34,7 +34,6 @@ public class KeyWordsHandler {
 	private static final int MAX_PAGE_NUM = 1;
 	private static final int semaphoreSize = 5;
 	private static final Semaphore semaphore = new Semaphore(semaphoreSize);
-	private final String PhantomJSExecutablePath = "D:\\phantomjs.exe";
 
 	private String keyWords;
 
@@ -42,6 +41,7 @@ public class KeyWordsHandler {
 		this.keyWords = keyWords;
 	}
 
+	@SuppressWarnings("unused")
 	private String getHtmlCodeByHttp(String targetUrl) {
 		try {
 			URL url = new URL(targetUrl);
@@ -80,7 +80,7 @@ public class KeyWordsHandler {
 		String HTMLCode = null;
 		PhantomJSDriverService.Builder builder = new PhantomJSDriverService.Builder();
 		PhantomJSDriverService service = builder.usingPhantomJSExecutable(
-				new File(PhantomJSExecutablePath)).build();
+				new File(EnvironmentInfo.PhantomJSExecutablePath)).build();
 		DesiredCapabilities cap = DesiredCapabilities.phantomjs();
 		cap.setCapability("phantomjs.page.settings.resourceTimeout", 20 * 1000);
 		driver = new PhantomJSDriver(service, cap);

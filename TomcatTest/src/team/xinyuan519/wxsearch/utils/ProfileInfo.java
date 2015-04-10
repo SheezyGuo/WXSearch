@@ -57,11 +57,6 @@ public class ProfileInfo {
 	}
 	// private final String encode = "utf-8";
 
-	private final String PhantomJSExecutablePath = "D:\\phantomjs.exe";
-
-	// private final String PhantomJSExecutablePath =
-	// "/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
-
 	public ProfileInfo(String identity, String openid) {
 		this.identity = identity;
 		this.openid = openid;
@@ -74,7 +69,7 @@ public class ProfileInfo {
 		String HTMLCode = null;
 		PhantomJSDriverService.Builder builder = new PhantomJSDriverService.Builder();
 		PhantomJSDriverService service = builder.usingPhantomJSExecutable(
-				new File(PhantomJSExecutablePath)).build();
+				new File(EnvironmentInfo.PhantomJSExecutablePath)).build();
 		DesiredCapabilities cap = DesiredCapabilities.phantomjs();
 		cap.setCapability("phantomjs.page.settings.resourceTimeout", 20 * 1000);
 		driver = new PhantomJSDriver(service, cap);

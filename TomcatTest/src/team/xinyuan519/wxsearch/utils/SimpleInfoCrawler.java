@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
+import org.bson.Document;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
 import org.htmlparser.filters.HasAttributeFilter;
@@ -19,28 +20,21 @@ import org.htmlparser.filters.TagNameFilter;
 import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import static com.mongodb.client.model.Filters.*;
 
 public class SimpleInfoCrawler implements Runnable {
 	private String targetUrl;
-	private String dbIP; // remote host IP
-	private int dbPort; // remove host port
 	private ProfileInfo profileInfo;
 	private final String charset = "utf-8";
-	private final String dbNameSuffix = "_temp";
 	final String urlHeader = "http://weixin.sogou.com/gzh?openid=";
 	private static final Object lock = new Object();
 
-	public SimpleInfoCrawler(String targetUrl, String dbIP, int dbPort,
-			ProfileInfo profileInfo) {
+	public SimpleInfoCrawler(String targetUrl, ProfileInfo profileInfo) {
 		super();
 		this.targetUrl = targetUrl;
-		this.dbIP = dbIP;
-		this.dbPort = dbPort;
 		this.profileInfo = profileInfo;
 	}
 
@@ -163,17 +157,20 @@ public class SimpleInfoCrawler implements Runnable {
 				null, null, getUrl(), getMD5(content), getTime(),
 				getMilliseconds());
 
-		MongoClient client = new MongoClient(dbIP, dbPort);
-		@SuppressWarnings("deprecation")
-		DB historyDB = client.getDB("WeiXinHistory" + this.dbNameSuffix);// 历史数据库
-		@SuppressWarnings("deprecation")
-		DB freshDB = client.getDB("WeiXinFresh" + this.dbNameSuffix); // 最新数据库
-		DBCollection historyColl = historyDB.getCollection(profileInfo
-				.getIdentity());
-		DBCollection freshColl = freshDB.getCollection(profileInfo
+		MongoClient mongoClient = new MongoClient(EnvironmentInfo.dbIP,
+				EnvironmentInfo.dbPort);
+		MongoDatabase historyDB = mongoClient
+				.getDatabase(EnvironmentInfo.historyDBName
+						+ EnvironmentInfo.dbNameSuffix);// 历史数据库
+		MongoDatabase freshDB = mongoClient
+				.getDatabase(EnvironmentInfo.freshDBName
+						+ EnvironmentInfo.dbNameSuffix); // 最新数据库
+		MongoCollection<Document> historyColl = historyDB
+				.getCollection(profileInfo.getIdentity());
+		MongoCollection<Document> freshColl = freshDB.getCollection(profileInfo
 				.getIdentity());
 
-		BasicDBObject article = new BasicDBObject();
+		Document article = new Document();
 		article.append("Title", item.getTitle());
 		article.append("Content", item.getContent());
 		article.append("Date", item.getDate());
@@ -183,13 +180,12 @@ public class SimpleInfoCrawler implements Runnable {
 		article.append("MD5", item.getMD5());
 		article.append("Time", item.getTime());
 		article.append("Milliseconds", item.getMilliseconds());
-		historyColl.insert(article);
+		historyColl.insertOne(article);
 
 		synchronized (lock) {
-			BasicDBObject query = new BasicDBObject("MD5", item.getMD5());
-			DBCursor cursor = freshColl.find(query);
-			if (cursor.hasNext()) {
-				BasicDBObject updateValue = new BasicDBObject();
+			Document find = freshColl.find(eq("Url", item.getUrl())).first();
+			if (find != null) {
+				Document updateValue = new Document();
 				updateValue.append("Title", item.getTitle());
 				updateValue.append("Content", item.getContent());
 				updateValue.append("Date", item.getDate());
@@ -199,32 +195,31 @@ public class SimpleInfoCrawler implements Runnable {
 				updateValue.append("MD5", item.getMD5());
 				updateValue.append("Time", item.getTime());
 				updateValue.append("Milliseconds", item.getMilliseconds());
-				BasicDBObject updateSetValue = new BasicDBObject("$set",
-						updateValue);
-				freshColl.update(query, updateSetValue);
+				Document updateSetValue = new Document("$set", updateValue);
+				freshColl.updateOne(eq("Url", item.getUrl()), updateSetValue);
 			} else {
-				freshColl.insert(article);
+				freshColl.insertOne(article);
 			}
 
-			@SuppressWarnings("deprecation")
-			DB db = client.getDB("AccountInfo" + this.dbNameSuffix);
-			DBCollection infoColl = db.getCollection("accountInfo");
-			BasicDBObject query2 = new BasicDBObject("OpenID",
-					profileInfo.getOpenid());
-			DBCursor cursor2 = infoColl.find(query2);
-			if (cursor2.hasNext()) {
+			MongoDatabase db = mongoClient.getDatabase("AccountInfo"
+					+ EnvironmentInfo.dbNameSuffix);
+			MongoCollection<Document> infoColl = db
+					.getCollection("accountInfo");
+			Document find2 = infoColl.find(
+					eq("OpenID", this.profileInfo.getOpenid())).first();
+			if (find2 != null) {
 				;
 			} else {
-				BasicDBObject account = new BasicDBObject();
+				Document account = new Document();
 				account.append("Name", profileInfo.getName())
 						.append("Identity", profileInfo.getIdentity())
 						.append("Info", profileInfo.getInfo())
 						.append("OpenID", profileInfo.getOpenid())
 						.append("WebUrl", profileInfo.getWebURL());
-				infoColl.insert(account);
+				infoColl.insertOne(account);
 			}
 		}
-		client.close();
+		mongoClient.close();
 	}
 
 	@Override
@@ -238,7 +233,7 @@ public class SimpleInfoCrawler implements Runnable {
 		profileInfo.init();
 		SimpleInfoCrawler crawler = new SimpleInfoCrawler(
 				"http://mp.weixin.qq.com/s?__biz=MjM5Njc5MjQwMQ==&mid=204701500&idx=1&sn=bd1d48cadb5361193102c5dc406785bb&3rd=MzA3MDU4NTYzMw==&scene=6#rd",
-				"localhost", 27017, profileInfo);
+				profileInfo);
 		crawler.crawlSimpleInfo();
 	}
 }

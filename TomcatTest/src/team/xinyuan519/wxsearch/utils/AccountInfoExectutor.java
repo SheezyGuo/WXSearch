@@ -7,8 +7,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class AccountInfoExectutor {
-	private final String dbIP = "localhost";
-	private final int dbPort = 27017;
 
 	private final int poolSize = 100 / 2; // 25,50 or 100 is recommended
 	private AccountInfo[] accountInfos;
@@ -24,15 +22,11 @@ public class AccountInfoExectutor {
 	private class PoolFiller implements Runnable {
 		private AccountInfo accountInfo;
 		private ExecutorService pool;
-		private String dbIP;
-		private int dbPort;
 
-		public PoolFiller(AccountInfo accountInfo, ExecutorService pool,
-				String dbIP, int dbPort) {
+		public PoolFiller(AccountInfo accountInfo, ExecutorService pool) {
 			this.accountInfo = accountInfo;
 			this.pool = pool;
-			this.dbIP = dbIP;
-			this.dbPort = dbPort;
+
 		}
 
 		@Override
@@ -44,7 +38,9 @@ public class AccountInfoExectutor {
 			while (!linkList.isEmpty()) {
 				String link = linkList.poll();
 				SimpleInfoCrawler crawler = new SimpleInfoCrawler(link,
-						this.dbIP, this.dbPort, profileInfo);
+						profileInfo);
+				ExtraInfoCrawler extraCrawler = new ExtraInfoCrawler();
+				extraCrawler.putTask(link, profileInfo.getIdentity());
 				pool.execute(crawler);
 			}
 		}
@@ -53,8 +49,7 @@ public class AccountInfoExectutor {
 	private void MutilThreadPoolFill(ExecutorService pool) {
 		PoolFiller[] fillers = new PoolFiller[this.length];
 		for (int i = 0; i < this.length; i++) {
-			fillers[i] = new PoolFiller(this.accountInfos[i], pool, this.dbIP,
-					this.dbPort);
+			fillers[i] = new PoolFiller(this.accountInfos[i], pool);
 		}
 		Thread[] threads = new Thread[this.length];
 		for (int i = 0; i < this.length; i++) {

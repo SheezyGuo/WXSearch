@@ -9,6 +9,7 @@ import java.util.Calendar;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
+import org.bson.Document;
 import org.htmlparser.Node;
 import org.htmlparser.NodeFilter;
 import org.htmlparser.Parser;
@@ -22,53 +23,28 @@ import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.Mongo;
+import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import static com.mongodb.client.model.Filters.*;
 
-public class WeiXinThread implements Runnable {
+public class RefreshThread {
+	private ProfileInfo profileInfo;
 
-	private ProfileInfo pl;
-	private String identity;
-	private String openid;
-	private String dbNameSuffix;
-	private WebDriver driver = null;
-
-	// on Windows
-	// private final String PhantomJSExecutablePath =
-	// "D:\\PhantomJS\\phantomjs-2.0.0-windows\\bin\\phantomjs.exe";
-	// private final String ParametersFilePath = "D:\\rawURL.txt";
-
-	// on Linux
-	private final String PhantomJSExecutablePath = "/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
-	private final String ParametersFilePath = "/home/dtlvhyy/rawURL";
-
-	public WeiXinThread(String identity, String openid) {
-		this.identity = identity;
-		this.openid = openid;
-		this.pl = new ProfileInfo(identity, openid);
-		this.dbNameSuffix = "";
+	public RefreshThread(ProfileInfo profileInfo) {
+		this.profileInfo = profileInfo;
 	}
 
-	public void setDbNameSuffix(String suffix) {
-		this.dbNameSuffix = suffix;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Runnable#run()
-	 */
-	@Override
-	public void run() {
-
-		Queue<String> qs = pl.getLinkListByPhantomJS();
+	public void refresh() {
+		WebDriver driver = null;
+		Queue<String> qs = profileInfo.getLinkList();
 		if (qs == null) {
-			System.out.println(String.format("openid为%s的公众号首页:%s不能打开!", openid,
-					"http://weixin.sogou.com/gzh?openid=" + openid));
+			System.out.println(String.format(
+					"openid为%s的公众号首页:%s不能打开!",
+					profileInfo.getOpenid(),
+					"http://weixin.sogou.com/gzh?openid="
+							+ profileInfo.getOpenid()));
 			return;
 		}
 		try {
@@ -81,11 +57,11 @@ public class WeiXinThread implements Runnable {
 
 			PhantomJSDriverService.Builder builder = new PhantomJSDriverService.Builder();
 			PhantomJSDriverService service = builder.usingPhantomJSExecutable(
-					new File(PhantomJSExecutablePath)).build();
+					new File(EnvironmentInfo.PhantomJSExecutablePath)).build();
 			driver = new PhantomJSDriver(service, cap);
 			driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.MINUTES);
 			driver.manage().timeouts().setScriptTimeout(10, TimeUnit.MINUTES);
-			Parameters p = new Parameters(ParametersFilePath);
+			Parameters p = new Parameters(EnvironmentInfo.ParametersFilePath);
 			while (!qs.isEmpty()) {
 				String targetUrl = qs.poll();
 				// int Flag = 5;
@@ -171,20 +147,23 @@ public class WeiXinThread implements Runnable {
 						String MD5 = this.getMD5(content);
 						// System.out.println("MD5:" + MD5);
 
-						Mongo mongo = new Mongo("localhost", 27017);
-						DB historyDB = mongo.getDB("WeiXinHistory"
-								+ this.dbNameSuffix);// 历史数据库
-						DB freshDB = mongo.getDB("WeiXinFresh"
-								+ this.dbNameSuffix); // 最新数据库
-						DBCollection historyColl = historyDB
-								.getCollection(this.identity);
-						DBCollection freshColl = freshDB
-								.getCollection(this.identity);
+						MongoClient mongoClient = new MongoClient(
+								EnvironmentInfo.dbIP, EnvironmentInfo.dbPort);
+						MongoDatabase historyDB = mongoClient
+								.getDatabase(EnvironmentInfo.historyDBName
+										+ EnvironmentInfo.dbNameSuffix);// 历史数据库
+						MongoDatabase freshDB = mongoClient
+								.getDatabase(EnvironmentInfo.freshDBName
+										+ EnvironmentInfo.dbNameSuffix); // 最新数据库
+						MongoCollection<Document> historyColl = historyDB
+								.getCollection(profileInfo.getIdentity());
+						MongoCollection<Document> freshColl = freshDB
+								.getCollection(profileInfo.getIdentity());
 
 						Calendar now = Calendar.getInstance();
 
 						if (!likeNum.equals("") && !readNum.equals("")) {
-							BasicDBObject article = new BasicDBObject();
+							Document article = new Document();
 							article.append("Title", title);
 							article.append("Content", content);
 							article.append("Date", date);
@@ -203,12 +182,12 @@ public class WeiXinThread implements Runnable {
 											now.get(Calendar.SECOND)));
 							article.append("Milliseconds",
 									now.getTimeInMillis());
-							historyColl.insert(article);
+							historyColl.insertOne(article);
 
-							BasicDBObject query = new BasicDBObject("MD5", MD5);
-							DBCursor cursor = freshColl.find(query);
-							if (cursor.hasNext()) {
-								BasicDBObject updateValue = new BasicDBObject();
+							Document query = freshColl.find(
+									eq("Url", targetUrl)).first();
+							if (query != null) {
+								Document updateValue = new Document();
 								updateValue.append("Title", title);
 								updateValue.append("Content", content);
 								updateValue.append("Date", date);
@@ -226,35 +205,42 @@ public class WeiXinThread implements Runnable {
 										now.get(Calendar.SECOND)));
 								updateValue.append("Milliseconds",
 										now.getTimeInMillis());
-								BasicDBObject updateSetValue = new BasicDBObject(
-										"$set", updateValue);
-								freshColl.update(query, updateSetValue);
+								Document updateSetValue = new Document("$set",
+										updateValue);
+								freshColl.updateOne(eq("Url", targetUrl),
+										updateSetValue);
 							} else {
-								freshColl.insert(article);
+								freshColl.insertOne(article);
 							}
-							DB db = mongo.getDB("AccountInfo"
-									+ this.dbNameSuffix);
-							DBCollection infoColl = db
-									.getCollection("accountInfo");
-							BasicDBObject query2 = new BasicDBObject("OpenID",
-									pl.getOpenid());
-							DBCursor cursor2 = infoColl.find(query2);
-							if (cursor2.hasNext()) {
-								;
-							} else {
-								BasicDBObject item = new BasicDBObject();
-								item.append("Name", pl.getName())
-										.append("Identity", pl.getIdentity())
-										.append("Info", pl.getInfo())
-										.append("OpenID", pl.getOpenid())
-										.append("WebUrl", pl.getWebURL());
-								infoColl.insert(item);
-							}
-							mongo.close();
+							// MongoDatabase db = mongoClient
+							// .getDatabase(EnvironmentInfo.accountInfoDBName
+							// + EnvironmentInfo.dbNameSuffix);
+							// MongoCollection<Document> infoColl = db
+							// .getCollection("accountInfo");
+							// BasicDBObject query2 = new
+							// BasicDBObject("OpenID",
+							// profileInfo.getOpenid());
+							// Document cursor2 = infoColl.find(query2);
+							// if (cursor2.hasNext()) {
+							// ;
+							// } else {
+							// Document item = new Document();
+							// item.append("Name", profileInfo.getName())
+							// .append("Identity",
+							// profileInfo.getIdentity())
+							// .append("Info", profileInfo.getInfo())
+							// .append("OpenID",
+							// profileInfo.getOpenid())
+							// .append("WebUrl",
+							// profileInfo.getWebURL());
+							// infoColl.insertOne(item);
+							// }
+							mongoClient.close();
 
 							System.out.println(String.format(
-									"%s Read:%s Date:%s Url:%s", this.identity,
-									readNum, date, newUrl));
+									"%s Read:%s Date:%s Url:%s",
+									profileInfo.getIdentity(), readNum, date,
+									newUrl));
 							Flag = 0;
 							// System.out.println("Flag:" + Flag);
 						} else {
@@ -320,19 +306,5 @@ public class WeiXinThread implements Runnable {
 			return null;
 		}
 		return newUrl;
-	}
-
-	public static void main(String[] args) {
-		WeiXinThread wxt = new WeiXinThread("wechengdu",
-				"oIWsFtxK3-RIHp4VizC1BUioKtdE");
-		Thread t = new Thread(wxt);
-		t.start();
-		// String likeNum = "123Like";
-		// try {
-		// likeNum = String.valueOf(Integer.valueOf(likeNum));
-		// } catch (NumberFormatException e) {
-		// likeNum = String.valueOf(0);
-		// }
-		// System.out.println(likeNum);
 	}
 }
