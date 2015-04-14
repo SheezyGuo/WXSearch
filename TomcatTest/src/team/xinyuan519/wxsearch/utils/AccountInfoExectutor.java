@@ -39,9 +39,9 @@ public class AccountInfoExectutor {
 				String link = linkList.poll();
 				SimpleInfoCrawler crawler = new SimpleInfoCrawler(link,
 						profileInfo);
+				pool.execute(crawler);
 				ExtraInfoCrawler extraCrawler = new ExtraInfoCrawler();
 				extraCrawler.putTask(link, profileInfo.getIdentity());
-				pool.execute(crawler);
 			}
 		}
 	}

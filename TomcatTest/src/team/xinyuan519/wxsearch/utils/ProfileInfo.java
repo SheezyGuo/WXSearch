@@ -244,18 +244,24 @@ public class ProfileInfo {
 
 	public static void main(String[] args) {
 
-		ProfileInfo pl = new ProfileInfo(null, "oIWsFt2Xdvlz_w4LRhTdpck5rOYQ");
+		ProfileInfo pl = new ProfileInfo(null, "oIWsFt8RjvhNflqVGzpWyjV9dzGg");
 		// Queue<String> qs = pl.getLinkListByHttpunit();
 		// while (!qs.isEmpty()) {
 		// System.out.println("Url:" + qs.poll());
 		// }
-
-		System.out.println(pl.getHTMLCodeByHttp());
-		long start = Calendar.getInstance().getTimeInMillis();
-		pl.getHTMlCodeByPhantomJS();
-		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
-		start = Calendar.getInstance().getTimeInMillis();
-		pl.getLinkListByHttpunit();
-		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
+		pl.init();
+		Queue<String> list = pl.getLinkList();
+		while(!list.isEmpty()){
+			String str = list.poll();
+			System.out.println(str);
+		}
+		
+//		System.out.println(pl.getHTMLCodeByHttp());
+//		long start = Calendar.getInstance().getTimeInMillis();
+//		pl.getHTMlCodeByPhantomJS();
+//		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
+//		start = Calendar.getInstance().getTimeInMillis();
+//		pl.getLinkListByHttpunit();
+//		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
 	}
 }

@@ -149,14 +149,14 @@ public class RefreshThread {
 
 						MongoClient mongoClient = new MongoClient(
 								EnvironmentInfo.dbIP, EnvironmentInfo.dbPort);
-						MongoDatabase historyDB = mongoClient
-								.getDatabase(EnvironmentInfo.historyDBName
-										+ EnvironmentInfo.dbNameSuffix);// 历史数据库
+//						MongoDatabase historyDB = mongoClient
+//								.getDatabase(EnvironmentInfo.historyDBName
+//										+ EnvironmentInfo.dbNameSuffix);// 历史数据库
 						MongoDatabase freshDB = mongoClient
 								.getDatabase(EnvironmentInfo.freshDBName
 										+ EnvironmentInfo.dbNameSuffix); // 最新数据库
-						MongoCollection<Document> historyColl = historyDB
-								.getCollection(profileInfo.getIdentity());
+//						MongoCollection<Document> historyColl = historyDB
+//								.getCollection(profileInfo.getIdentity());
 						MongoCollection<Document> freshColl = freshDB
 								.getCollection(profileInfo.getIdentity());
 
@@ -182,7 +182,7 @@ public class RefreshThread {
 											now.get(Calendar.SECOND)));
 							article.append("Milliseconds",
 									now.getTimeInMillis());
-							historyColl.insertOne(article);
+//							historyColl.insertOne(article);
 
 							Document query = freshColl.find(
 									eq("Url", targetUrl)).first();

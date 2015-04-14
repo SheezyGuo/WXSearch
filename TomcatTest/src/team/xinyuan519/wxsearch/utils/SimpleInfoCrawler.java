@@ -159,14 +159,14 @@ public class SimpleInfoCrawler implements Runnable {
 
 		MongoClient mongoClient = new MongoClient(EnvironmentInfo.dbIP,
 				EnvironmentInfo.dbPort);
-		MongoDatabase historyDB = mongoClient
-				.getDatabase(EnvironmentInfo.historyDBName
-						+ EnvironmentInfo.dbNameSuffix);// 历史数据库
+//		MongoDatabase historyDB = mongoClient
+//				.getDatabase(EnvironmentInfo.historyDBName
+//						+ EnvironmentInfo.dbNameSuffix);// 历史数据库
 		MongoDatabase freshDB = mongoClient
 				.getDatabase(EnvironmentInfo.freshDBName
 						+ EnvironmentInfo.dbNameSuffix); // 最新数据库
-		MongoCollection<Document> historyColl = historyDB
-				.getCollection(profileInfo.getIdentity());
+//		MongoCollection<Document> historyColl = historyDB
+//				.getCollection(profileInfo.getIdentity());
 		MongoCollection<Document> freshColl = freshDB.getCollection(profileInfo
 				.getIdentity());
 
@@ -180,7 +180,7 @@ public class SimpleInfoCrawler implements Runnable {
 		article.append("MD5", item.getMD5());
 		article.append("Time", item.getTime());
 		article.append("Milliseconds", item.getMilliseconds());
-		historyColl.insertOne(article);
+//		historyColl.insertOne(article);
 
 		synchronized (lock) {
 			Document find = freshColl.find(eq("Url", item.getUrl())).first();
