@@ -29,14 +29,14 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import static com.mongodb.client.model.Filters.*;
 
-public class RefreshThread {
+public class RefreshThread implements Runnable{
 	private ProfileInfo profileInfo;
 
 	public RefreshThread(ProfileInfo profileInfo) {
 		this.profileInfo = profileInfo;
 	}
 
-	public void refresh() {
+	public void run() {
 		WebDriver driver = null;
 		Queue<String> qs = profileInfo.getLinkList();
 		if (qs == null) {

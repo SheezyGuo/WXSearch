@@ -92,23 +92,29 @@ public class WeiXinMain {
 		// e.printStackTrace();
 		// }
 		// }
-		MongoClient client = new MongoClient(EnvironmentInfo.dbIP,
-				EnvironmentInfo.dbPort);
-		MongoDatabase database = client
-				.getDatabase(EnvironmentInfo.accountInfoDBName
-						+ EnvironmentInfo.dbNameSuffix);
-		MongoCollection<Document> coll = database.getCollection("accountInfo");
-		MongoCursor<Document> cursor = coll.find().iterator();
-		while (cursor.hasNext()) {
-			Document doc = cursor.next();
-			String identity = doc.getString("Identity");
-			String openID = doc.getString("OpenID");
-			ProfileInfo profileInfo = new ProfileInfo(identity, openID);
-			profileInfo.init();
 
+		// MongoClient client = new MongoClient(EnvironmentInfo.dbIP,
+		// EnvironmentInfo.dbPort);
+		// MongoDatabase database = client
+		// .getDatabase(EnvironmentInfo.accountInfoDBName
+		// + EnvironmentInfo.dbNameSuffix);
+		// MongoCollection<Document> coll =
+		// database.getCollection("accountInfo");
+		// MongoCursor<Document> cursor = coll.find().iterator();
+		// while (cursor.hasNext()) {
+		// Document doc = cursor.next();
+		// String identity = doc.getString("Identity");
+		// String openID = doc.getString("OpenID");
+		// ProfileInfo profileInfo = new ProfileInfo(identity, openID);
+		// profileInfo.init();
+		//
+		// }
+		// cursor.close();
+		// client.close();
+		while (true) {
+			RefreshDeamon deamon = new RefreshDeamon();
+			deamon.StartDeamon();
 		}
-		cursor.close();
-		client.close();
 	}
 
 }
