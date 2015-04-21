@@ -1,12 +1,5 @@
 package team.xinyuan519.wxsearch.utils;
 
-import org.bson.Document;
-
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
-
 public class WeiXinMain {
 
 	public static void main(String[] args) {

@@ -10,8 +10,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Calendar;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -180,6 +178,7 @@ public class KeyWordsHandler {
 		return json;
 	}
 
+	@SuppressWarnings("static-access")
 	public String handleKeyWords() {
 		long start = Calendar.getInstance().getTimeInMillis();
 		AccountInfo[] accountInfos = this.getAccountInfo(this.keyWords);
@@ -187,7 +186,9 @@ public class KeyWordsHandler {
 				this.semaphore);
 		executor.execute();
 		String jsonInfo = this.infos2json(accountInfos);
-		return String.valueOf(Calendar.getInstance().getTimeInMillis() - start);
+		long timeout = Calendar.getInstance().getTimeInMillis() - start;
+		System.out.println("KeyWords:"+keyWords+"\t timeout:"+timeout);
+		return String.valueOf(jsonInfo);
 	}
 
 	public static void main(String[] args) {
@@ -210,10 +211,8 @@ public class KeyWordsHandler {
 			}
 
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

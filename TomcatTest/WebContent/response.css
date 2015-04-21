@@ -1,0 +1,64 @@
+body {
+	font-size: 16px;
+	font-family: "Microsoft Yahei","Times New Roman",Georgia,Serif;
+}
+#header{
+	position: fixed;
+	z-index: 100;
+	width: 100%;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 2em;
+	background-color: white;
+	border-bottom-style: solid;
+	border-bottom-color: gray;
+	border-bottom-width: thin;
+}
+form.form-inline{
+	margin: 10px,10px;
+}
+#keyWords{
+	min-width: 25em;
+}
+div[name="container"]{
+	padding-left: 2em;
+	padding-top: 4.5em;
+}
+div[name="list-item"]{
+	margin-bottom: 2em;
+	max-width: 35em;
+}
+font[name="header"]{
+	font-family: "Microsoft Yahei","Times New Roman",Georgia,Serif;
+	font-size: 1em;
+	color: black;
+}
+font[name="name"]{
+	font-family: "Microsoft Yahei","Times New Roman",Georgia,Serif;
+	font-size: 1.2em;
+	color:blue;
+}
+font[name="identity"]{
+	position:relative;
+	left: 3em;
+	font-family: "Microsoft Yahei","Times New Roman",Georgia,Serif;
+	font-size: 0.65em;
+	color: gray;
+}
+font[name="info"]{
+	position: relative;
+	top: -0.6em;
+	font-family: "Microsoft Yahei","Times New Roman",Georgia,Serif;
+	font-size: 0.8em;
+	color: black;
+}
+div[name="stars"]{
+	position: relative;
+	top: -0.8em;
+}
+font[name="starsFont"]{
+	padding-right: 0.3em;
+	font-family: "Microsoft Yahei","Times New Roman",Georgia,Serif;
+	font-style: italic;
+	font-size: inherit;
+}

@@ -1,0 +1,13 @@
+body { 
+	text-align: center;
+	margin-top: 50px;
+}
+.container {
+	margin-top:50px;
+}
+#input_form{
+}
+#keyWords {
+	min-width:25em;
+}
+

@@ -1,11 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>XX搜索-。-</title>
+   <title>vSearch</title>
+   <link rel="stylesheet" href="http://apps.bdimg.com/libs/bootstrap/3.3.0/css/bootstrap.min.css">
+   <script src="http://apps.bdimg.com/libs/jquery/2.1.1/jquery.min.js"></script>
+   <script src="http://apps.bdimg.com/libs/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="./entry.css">
 </head>
 <body>
-	<h1 align="center"><font size="6" color="red">XX一下 你就XX</font></h1>
-	<p><center><form name="keyWords" action="proceed.jsp" method="get">XX搜索<input type="text" name="keyWords" /><input type="submit" value="提交" /></form></center></center></p>
+<h1> 微搜一下</h1>
+<div class="container">
+	<form class="form-inline" role="form" id="input_form" action="response.jsp" method="get">
+		<div class="form-group">
+			<div class="input-group">
+				<input type="text" class="form-control" name="keyWords" id="keyWords" placeholder="输入关键词">
+				<span class="input-group-btn">
+					<button type="submit" class="btn btn-primary" id="s_btn">
+						<span class="glyphicon glyphicon-search"></span>
+					</button>
+				</span>
+			</div>
+		</div>
+	</form>
+</div>
+
 </body>
 </html>
+

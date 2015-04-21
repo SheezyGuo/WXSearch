@@ -9,4 +9,6 @@ public class EnvironmentInfo {
 //	public static final String historyDBName = "WeiXinHistory";
 	public static final String freshDBName = "WeiXinFresh";
 	public static final String accountInfoDBName = "AccountInfo";
+	public static final String pythonServerIP = "localhost";
+	public static final int pythonServerPort = 4399;
 }
