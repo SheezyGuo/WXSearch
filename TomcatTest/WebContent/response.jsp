@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<%@ page import="team.xinyuan519.wxsearch.utils.*"%>
+<%@ page import="team.xinyuan519.wxsearch.utils.*,java.net.URLEncoder"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -36,16 +36,21 @@
 			<div id="list">
 				<%
 					String keyWords = request.getParameter("keyWords").trim();
-					KeyWordsHandler handler = new KeyWordsHandler(keyWords);
-					String jsonInfo = handler.handleKeyWords();
-					DivGetter getter = new DivGetter(keyWords, jsonInfo);
+					String utf8KeyWords = URLEncoder.encode(keyWords, "utf-8");
+					String utf8Callback = URLEncoder.encode("callback", "utf-8");
+					DivGetter getter = new DivGetter(keyWords);
 					String listConent = getter.getContent();
 					out.write(listConent);
 				%>
 			</div>
 		</div>
 		<%
-			String script = String.format("<script type=\"text/javascript\" src=\"http://%s:%s/?keyWords=%s&jsonList=%s&callback=callback\"></script>",EnvironmentInfo.pythonServerIP,EnvironmentInfo.pythonServerPort,keyWords,jsonInfo);
+			String script = String
+					.format("<script type=\"text/javascript\" src=\"http://%s:%d/%s/messenger.jsp?keyWords=%s&callback=%s\"></script>",
+							EnvironmentInfo.serverIP,
+							EnvironmentInfo.webServicePort,
+							EnvironmentInfo.projectName, utf8KeyWords,
+							utf8Callback);
 			out.write(script);
 		%>
 	</div>

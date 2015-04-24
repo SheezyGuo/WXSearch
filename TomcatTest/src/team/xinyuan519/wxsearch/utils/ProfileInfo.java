@@ -140,7 +140,6 @@ public class ProfileInfo {
 			page = client.getPage(this.WebURL);
 			HTMLCode = page.asXml();
 		} catch (FailingHttpStatusCodeException | IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		client.closeAllWindows();

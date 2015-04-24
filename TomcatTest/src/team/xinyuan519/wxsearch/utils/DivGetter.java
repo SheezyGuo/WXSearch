@@ -14,11 +14,11 @@ import org.json.JSONObject;
 public class DivGetter {
 	private String jsonArrayStr;
 
-	public DivGetter(String keyWords, String jsonList) {
+	public DivGetter(String keyWords) {
 		this.jsonArrayStr = this.getHTMLCodeByHttp(String.format(
-				"http://%s:%d/?keyWords=%s&jsonList=%s",
+				"http://%s:%d/?keyWords=%s",
 				EnvironmentInfo.pythonServerIP,
-				EnvironmentInfo.pythonServerPort, keyWords, jsonList));
+				EnvironmentInfo.pythonServerPort, keyWords));
 	}
 
 	private String calStars(int stars) {

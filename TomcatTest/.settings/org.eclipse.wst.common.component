@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
-    <wb-module deploy-name="TomcatTest">
+    <wb-module deploy-name="VSearch">
         <wb-resource deploy-path="/" source-path="/WebContent" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src"/>
-        <property name="context-root" value="TomcatTest"/>
-        <property name="java-output-path" value="/TomcatTest/build/classes"/>
+        <property name="java-output-path" value="/VSearch/build/classes"/>
+        <property name="context-root" value="VSearch"/>
     </wb-module>
 </project-modules>
