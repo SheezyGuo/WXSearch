@@ -3,6 +3,7 @@ package team.xinyuan519.wxsearch.utils;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 
@@ -70,7 +71,14 @@ public class RefreshTaskProcessor implements Runnable {
 		doc.append("KeyWrod", keyWord).append("Finished", "False");
 		this.coll.insertOne(doc);
 	}
-
+	
+	public void markFinished(String keyWord){
+		Document query = new Document("KeyWord",keyWord);
+		Document doc = new Document();
+		doc.append("KeyWord",keyWord).append("Finished","True");
+		this.coll.findOneAndReplace(query, doc);
+	}
+	
 	public Queue<String> getUnfinishedTaskList() {
 		Queue<String> list = new LinkedList<String>();
 		Document query = new Document("Finished", "False");
@@ -99,19 +107,45 @@ public class RefreshTaskProcessor implements Runnable {
 			this.removeAllCompletedTask();
 		}
 	}
-
+	
+	public void process(){
+		while(true){
+			Queue<String> taskList = this.getUnfinishedTaskList();
+			int count = taskList.size();
+			if(count == 0){
+				try {
+					System.out.println("Nothing to do,sleep for 2 min...");
+					Thread.sleep(2*60*1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+			else{
+				this.releaseDBWhenFull();
+				while(!taskList.isEmpty()){
+					String keyWord = taskList.poll();
+					KeyWordsHandler handler = new KeyWordsHandler(keyWord);
+					handler.handleKeyWords();
+					this.markFinished(keyWord);
+				}
+			}
+		}
+	}
+	
 	public static void main(String[] args) {
 		RefreshTaskProcessor processor = new RefreshTaskProcessor();
-		Queue<String> list = processor.getUnfinishedTaskList();
-		if (list.size() == 0) {
-			System.out.println("Empty list");
-			return;
-		}
-		while (!list.isEmpty()) {
-			String str = list.poll();
-			System.out.println(str);
-		}
+//		Queue<String> list = processor.getUnfinishedTaskList();
+//		if (list.size() == 0) {
+//			System.out.println("Empty list");
+//			return;
+//		}
+//		while (!list.isEmpty()) {
+//			String str = list.poll();
+//			System.out.println(str);
+//		}
 //		processor.removeAllCompletedTask();
+//		processor.markFinished("linyu");
+		processor.process();
 	}
 
 }
