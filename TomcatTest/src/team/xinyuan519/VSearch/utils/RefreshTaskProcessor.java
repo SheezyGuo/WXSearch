@@ -67,7 +67,7 @@ public class RefreshTaskProcessor implements Runnable {
 
 	public void addTask(String keyWord) {
 		Document doc = new Document();
-		doc.append("KeyWrod", keyWord).append("Finished", "False");
+		doc.append("KeyWord", keyWord).append("Finished", "False");
 		this.coll.insertOne(doc);
 	}
 	
