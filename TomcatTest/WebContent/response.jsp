@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
-<%@ page import="team.xinyuan519.wxsearch.utils.*,java.net.URLEncoder"%>
+<%@ page import="team.xinyuan519.VSearch.utils.*,java.net.URLEncoder"%>
 <!DOCTYPE html>
 <html>
 <head>

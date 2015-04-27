@@ -1,4 +1,4 @@
-package team.xinyuan519.wxsearch.utils;
+package team.xinyuan519.VSearch.utils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

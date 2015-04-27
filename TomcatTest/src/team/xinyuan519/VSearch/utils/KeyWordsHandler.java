@@ -1,4 +1,4 @@
-package team.xinyuan519.wxsearch.utils;
+package team.xinyuan519.VSearch.utils;
 
 import java.io.BufferedReader;
 import java.io.File;

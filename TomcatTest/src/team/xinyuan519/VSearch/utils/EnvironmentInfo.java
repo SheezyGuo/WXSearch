@@ -1,10 +1,10 @@
-package team.xinyuan519.wxsearch.utils;
+package team.xinyuan519.VSearch.utils;
 
 public class EnvironmentInfo {
 	public static final String projectName ="VSearch";
 	
 	public static final String serverIP ="120.27.47.167";
-	public static final int webServicePort = 8080;
+	public static final int webServicePort = 80;
 	public static final String dbIP = serverIP;
 	public static final int dbPort = 27017;
 	public static final String pythonServerIP = serverIP;

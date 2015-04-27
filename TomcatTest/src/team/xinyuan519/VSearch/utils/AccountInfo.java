@@ -1,4 +1,4 @@
-package team.xinyuan519.wxsearch.utils;
+package team.xinyuan519.VSearch.utils;
 public class AccountInfo {
 	private String openid;
 	private String identity;
