@@ -38,6 +38,8 @@
 					String keyWords = request.getParameter("keyWords").trim();
 					String utf8KeyWords = URLEncoder.encode(keyWords, "utf-8");
 					String utf8Callback = URLEncoder.encode("callback", "utf-8");
+					RefreshTaskProcessor processor = new RefreshTaskProcessor();
+					processor.addTask(keyWords);
 					DivGetter getter = new DivGetter(keyWords);
 					String listConent = getter.getContent();
 					out.write(listConent);
