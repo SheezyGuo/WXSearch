@@ -19,5 +19,7 @@ public class EnvironmentInfo {
 	public static final String PhantomJSExecutablePath = "D:\\phantomjs.exe";
 	public static final String ParametersFilePath = "D:\\rawURL.txt";
 	
-
+	public static final String dbUser = "JavaOperator";
+	public static final char[] dbPwd = "gsh632260737".toCharArray();
+	public static final String authDB = "admin";
 }

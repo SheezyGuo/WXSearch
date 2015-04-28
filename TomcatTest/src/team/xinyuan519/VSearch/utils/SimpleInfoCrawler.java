@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Calendar;
 
 import org.bson.Document;
@@ -21,8 +22,11 @@ import org.htmlparser.util.NodeList;
 import org.htmlparser.util.ParserException;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
 import static com.mongodb.client.model.Filters.*;
 
 public class SimpleInfoCrawler implements Runnable {
@@ -157,8 +161,14 @@ public class SimpleInfoCrawler implements Runnable {
 				null, null, getUrl(), getMD5(content), getTime(),
 				getMilliseconds());
 
-		MongoClient mongoClient = new MongoClient(EnvironmentInfo.dbIP,
-				EnvironmentInfo.dbPort);
+		ServerAddress address = new ServerAddress(
+				EnvironmentInfo.dbIP, EnvironmentInfo.dbPort);
+		MongoCredential credential = MongoCredential
+				.createCredential(EnvironmentInfo.dbUser,
+						EnvironmentInfo.authDB,
+						EnvironmentInfo.dbPwd);
+		MongoClient mongoClient = new MongoClient(address,
+				Arrays.asList(credential));
 //		MongoDatabase historyDB = mongoClient
 //				.getDatabase(EnvironmentInfo.historyDBName
 //						+ EnvironmentInfo.dbNameSuffix);// 历史数据库

@@ -1,6 +1,7 @@
 package team.xinyuan519.VSearch.utils;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +14,8 @@ import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
@@ -102,8 +105,14 @@ public class ExtraInfoCrawler {
 					likeNum = String.valueOf(0);
 				}
 				
-				mongoClient = new MongoClient(EnvironmentInfo.dbIP,
-						EnvironmentInfo.dbPort);
+				ServerAddress address = new ServerAddress(
+						EnvironmentInfo.dbIP, EnvironmentInfo.dbPort);
+				MongoCredential credential = MongoCredential
+						.createCredential(EnvironmentInfo.dbUser,
+								EnvironmentInfo.authDB,
+								EnvironmentInfo.dbPwd);
+				mongoClient = new MongoClient(address,
+						Arrays.asList(credential));
 //				MongoDatabase historyDB = mongoClient
 //						.getDatabase(EnvironmentInfo.historyDBName
 //								+ EnvironmentInfo.dbNameSuffix);

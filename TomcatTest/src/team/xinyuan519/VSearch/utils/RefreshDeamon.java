@@ -1,32 +1,37 @@
 package team.xinyuan519.VSearch.utils;
 
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
 public class RefreshDeamon {
-	private final static int poolSize = 5;
-	private ExecutorService pool;
-
-	public RefreshDeamon() {
-		this.pool = Executors.newFixedThreadPool(poolSize);
-	}
-
-	public void refreshAccount(ProfileInfo profileInfo) {
+	private final int poolSize = 5;
+	
+	public void refreshAccount(ExecutorService pool,ProfileInfo profileInfo) {
 		RefreshThread refreshThread = new RefreshThread(profileInfo);
-		this.pool.execute(refreshThread);
+		pool.execute(refreshThread);
 	}
 
-	public void StartDeamon() {
-		MongoClient client = new MongoClient(EnvironmentInfo.dbIP,
+	public void refreshAll() {
+		ExecutorService pool = Executors.newFixedThreadPool(this.poolSize);
+		ServerAddress address = new ServerAddress(EnvironmentInfo.dbIP,
 				EnvironmentInfo.dbPort);
-		MongoDatabase database = client
+		MongoCredential credential = MongoCredential.createCredential(
+				EnvironmentInfo.dbUser, EnvironmentInfo.authDB,
+				EnvironmentInfo.dbPwd);
+		MongoClient mongoClient = new MongoClient(address,
+				Arrays.asList(credential));
+		MongoDatabase database = mongoClient
 				.getDatabase(EnvironmentInfo.accountInfoDBName
 						+ EnvironmentInfo.dbNameSuffix);
 		MongoCollection<Document> coll = database.getCollection("accountInfo");
@@ -37,11 +42,32 @@ public class RefreshDeamon {
 			String openID = doc.getString("OpenID");
 			ProfileInfo profileInfo = new ProfileInfo(identity, openID);
 			profileInfo.init();
-			refreshAccount(profileInfo);
+			refreshAccount(pool,profileInfo);
 		}
 		cursor.close();
-		client.close();
-		this.pool.shutdown();
+		mongoClient.close();
+		pool.shutdown();
+		while (!pool.isTerminated()) {
+			try {
+				pool.awaitTermination(5, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
+	public void StartDeamon() {
+		while (true) {
+			try {
+				this.refreshAll();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public static void main(String args) {
+		RefreshDeamon deamon = new RefreshDeamon();
+		deamon.StartDeamon();
+	}
 }

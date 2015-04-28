@@ -18,30 +18,28 @@ public class RefreshTaskProcessor implements Runnable {
 	private MongoClient client;
 	private MongoDatabase db;
 	private MongoCollection<Document> coll;
-	private final String user = "JavaOperator";
-	private final char[] pwd = "gsh632260737".toCharArray();
-	private final String authDB = "admin";
 	private final int DBFullCount = 10000;
 	private String keyWord;
 	private boolean isInitialized = false;
-	
+
 	/*
 	 * run() method is designed to speed up addTask() method,so use it after
 	 * this.keyWord is specified!!
 	 */
-	
+
 	public RefreshTaskProcessor() {
 		this.initialize();
 	}
-	
-	public RefreshTaskProcessor(String keyWord){
+
+	public RefreshTaskProcessor(String keyWord) {
 		this.keyWord = keyWord;
 	}
-	
+
 	@Override
 	public void run() {
-		if(this.keyWord == null){
-			System.err.println("This method is used for speeding up addTask(),specify the keyWord parameter first");
+		if (this.keyWord == null) {
+			System.err
+					.println("This method is used for speeding up addTask(),specify the keyWord parameter first");
 			return;
 		}
 		this.initialize();
@@ -50,10 +48,11 @@ public class RefreshTaskProcessor implements Runnable {
 
 	public void initialize() {
 		if (this.isInitialized != true) {
-			MongoCredential credential = MongoCredential.createCredential(user,
-					authDB, pwd);
 			ServerAddress address = new ServerAddress(EnvironmentInfo.dbIP,
 					EnvironmentInfo.dbPort);
+			MongoCredential credential = MongoCredential.createCredential(
+					EnvironmentInfo.dbUser, EnvironmentInfo.authDB,
+					EnvironmentInfo.dbPwd);
 			this.client = new MongoClient(address, Arrays.asList(credential));
 			this.db = client.getDatabase("RefreshTask");
 			this.coll = db.getCollection("refreshTask");
@@ -70,14 +69,14 @@ public class RefreshTaskProcessor implements Runnable {
 		doc.append("KeyWord", keyWord).append("Finished", "False");
 		this.coll.insertOne(doc);
 	}
-	
-	public void markFinished(String keyWord){
-		Document query = new Document("KeyWord",keyWord);
+
+	public void markFinished(String keyWord) {
+		Document query = new Document("KeyWord", keyWord);
 		Document doc = new Document();
-		doc.append("KeyWord",keyWord).append("Finished","True");
+		doc.append("KeyWord", keyWord).append("Finished", "True");
 		this.coll.findOneAndReplace(query, doc);
 	}
-	
+
 	public Queue<String> getUnfinishedTaskList() {
 		Queue<String> list = new LinkedList<String>();
 		Document query = new Document("Finished", "False");
@@ -106,44 +105,36 @@ public class RefreshTaskProcessor implements Runnable {
 			this.removeAllCompletedTask();
 		}
 	}
-	
-	public void process(){
-		while(true){
-			Queue<String> taskList = this.getUnfinishedTaskList();
-			int count = taskList.size();
-			if(count == 0){
-				try {
-					System.out.println("Nothing to do,sleep for 2 min...");
-					Thread.sleep(2*60*1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
+
+	public void process() {
+		while (true) {
+			try {
+				Queue<String> taskList = this.getUnfinishedTaskList();
+				int count = taskList.size();
+				if (count == 0) {
+					try {
+						System.out.println("Nothing to do,sleep for 30 sec...");
+						Thread.sleep(30 * 1000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				} else {
+					this.releaseDBWhenFull();
+					while (!taskList.isEmpty()) {
+						String keyWord = taskList.poll();
+						KeyWordsHandler handler = new KeyWordsHandler(keyWord);
+						handler.handleKeyWords();
+						this.markFinished(keyWord);
+					}
 				}
-			}
-			else{
-				this.releaseDBWhenFull();
-				while(!taskList.isEmpty()){
-					String keyWord = taskList.poll();
-					KeyWordsHandler handler = new KeyWordsHandler(keyWord);
-					handler.handleKeyWords();
-					this.markFinished(keyWord);
-				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		RefreshTaskProcessor processor = new RefreshTaskProcessor();
-//		Queue<String> list = processor.getUnfinishedTaskList();
-//		if (list.size() == 0) {
-//			System.out.println("Empty list");
-//			return;
-//		}
-//		while (!list.isEmpty()) {
-//			String str = list.poll();
-//			System.out.println(str);
-//		}
-//		processor.removeAllCompletedTask();
-//		processor.markFinished("linyu");
 		processor.process();
 	}
 

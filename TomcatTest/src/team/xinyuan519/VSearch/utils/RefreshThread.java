@@ -5,6 +5,7 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
@@ -24,12 +25,15 @@ import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
 import static com.mongodb.client.model.Filters.*;
 
-public class RefreshThread implements Runnable{
+public class RefreshThread implements Runnable {
 	private ProfileInfo profileInfo;
 
 	public RefreshThread(ProfileInfo profileInfo) {
@@ -147,16 +151,22 @@ public class RefreshThread implements Runnable{
 						String MD5 = this.getMD5(content);
 						// System.out.println("MD5:" + MD5);
 
-						MongoClient mongoClient = new MongoClient(
+						ServerAddress address = new ServerAddress(
 								EnvironmentInfo.dbIP, EnvironmentInfo.dbPort);
-//						MongoDatabase historyDB = mongoClient
-//								.getDatabase(EnvironmentInfo.historyDBName
-//										+ EnvironmentInfo.dbNameSuffix);// 历史数据库
+						MongoCredential credential = MongoCredential
+								.createCredential(EnvironmentInfo.dbUser,
+										EnvironmentInfo.authDB,
+										EnvironmentInfo.dbPwd);
+						MongoClient mongoClient = new MongoClient(address,
+								Arrays.asList(credential));
+						// MongoDatabase historyDB = mongoClient
+						// .getDatabase(EnvironmentInfo.historyDBName
+						// + EnvironmentInfo.dbNameSuffix);// 历史数据库
 						MongoDatabase freshDB = mongoClient
 								.getDatabase(EnvironmentInfo.freshDBName
 										+ EnvironmentInfo.dbNameSuffix); // 最新数据库
-//						MongoCollection<Document> historyColl = historyDB
-//								.getCollection(profileInfo.getIdentity());
+						// MongoCollection<Document> historyColl = historyDB
+						// .getCollection(profileInfo.getIdentity());
 						MongoCollection<Document> freshColl = freshDB
 								.getCollection(profileInfo.getIdentity());
 
@@ -182,7 +192,7 @@ public class RefreshThread implements Runnable{
 											now.get(Calendar.SECOND)));
 							article.append("Milliseconds",
 									now.getTimeInMillis());
-//							historyColl.insertOne(article);
+							// historyColl.insertOne(article);
 
 							Document query = freshColl.find(
 									eq("Url", targetUrl)).first();
