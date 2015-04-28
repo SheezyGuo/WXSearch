@@ -134,8 +134,17 @@ public class RefreshTaskProcessor implements Runnable {
 	}
 
 	public static void main(String[] args) {
-		RefreshTaskProcessor processor = new RefreshTaskProcessor();
-		processor.process();
+//		RefreshTaskProcessor processor = new RefreshTaskProcessor();
+//		processor.process();
+		ServerAddress address = new ServerAddress(EnvironmentInfo.dbIP,
+				EnvironmentInfo.dbPort);
+		MongoCredential credential = MongoCredential.createCredential(
+				EnvironmentInfo.dbUser, EnvironmentInfo.authDB,
+				EnvironmentInfo.dbPwd);
+		MongoClient client = new MongoClient(address, Arrays.asList(credential));
+		MongoDatabase db = client.getDatabase("WeiXinFresh");
+		db.getCollection("linjibo").insertOne(new Document("key",null));
+		client.close();
 	}
 
 }

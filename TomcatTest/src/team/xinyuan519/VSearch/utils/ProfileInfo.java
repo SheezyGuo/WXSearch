@@ -50,14 +50,16 @@ public class ProfileInfo {
 	public String getWebURL() {
 		return WebURL;
 	}
-	
-	public Queue<String> getLinkList(){
+
+	public Queue<String> getLinkList() {
 		return linkList;
 	}
+
 	// private final String encode = "utf-8";
 
 	public ProfileInfo(String identity, String openid) {
-		this.identity = identity;
+		this.identity = identity;// parameter identity is optional, init() or
+									// getLinkListByPhantomJS() will modify it
 		this.openid = openid;
 		this.WebURL = "http://weixin.sogou.com/gzh?openid=" + openid;
 	}
@@ -151,7 +153,6 @@ public class ProfileInfo {
 		if (HTMLCode == null) {
 			return null;
 		}
-
 		Queue<String> queue = new LinkedList<String>();
 		Pattern pattern = Pattern
 				.compile("(?<=href=\")http://mp\\.weixin\\.qq\\.com/(.*?)(?=\")");
@@ -162,9 +163,17 @@ public class ProfileInfo {
 				queue.offer(str);
 			}
 		}
-
+		String identity = this.identity;// this ensure that the value of
+										// this.identity can be found
 		String name = "notfound";
 		String info = "notfound";
+
+		Pattern idttPattern = Pattern
+				.compile("(?<=<span>微信号：)(.*?)(?=</span>)");
+		Matcher idttMatcher = idttPattern.matcher(HTMLCode);
+		if (idttMatcher.find()) {
+			identity = idttMatcher.group();
+		}
 		if (HTMLCode.contains("<h3 id=\"weixinname\">")) {
 
 			name = HTMLCode.substring(
@@ -184,6 +193,7 @@ public class ProfileInfo {
 			// System.out.println(info);
 		}
 
+		this.identity = identity;
 		this.name = name;
 		this.info = info;
 		this.linkList = queue;
@@ -231,35 +241,26 @@ public class ProfileInfo {
 		this.name = name;
 		this.info = info;
 		this.linkList = queue;
-		
+
 		return queue;
 
 	}
-	
-	public void init(){
+
+	public void init() {
 		this.getLinkListByPhantomJS();
 	}
 
 	public static void main(String[] args) {
 
-		ProfileInfo pl = new ProfileInfo(null, "oIWsFt8RjvhNflqVGzpWyjV9dzGg");
-		// Queue<String> qs = pl.getLinkListByHttpunit();
-		// while (!qs.isEmpty()) {
-		// System.out.println("Url:" + qs.poll());
-		// }
-		pl.init();
-		Queue<String> list = pl.getLinkList();
-		while(!list.isEmpty()){
-			String str = list.poll();
-			System.out.println(str);
-		}
-		
-//		System.out.println(pl.getHTMLCodeByHttp());
-//		long start = Calendar.getInstance().getTimeInMillis();
-//		pl.getHTMlCodeByPhantomJS();
-//		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
-//		start = Calendar.getInstance().getTimeInMillis();
-//		pl.getLinkListByHttpunit();
-//		System.out.println(Calendar.getInstance().getTimeInMillis() - start);
+		ProfileInfo pl = new ProfileInfo(null, "oIWsFt3P1XcKR7ZTMFofQnRGPHlw");
+		pl.getLinkListByPhantomJS();
+		System.out.println(pl.getIdentity());
+		// System.out.println(pl.getHTMLCodeByHttp());
+		// long start = Calendar.getInstance().getTimeInMillis();
+		// pl.getHTMlCodeByPhantomJS();
+		// System.out.println(Calendar.getInstance().getTimeInMillis() - start);
+		// start = Calendar.getInstance().getTimeInMillis();
+		// pl.getLinkListByHttpunit();
+		// System.out.println(Calendar.getInstance().getTimeInMillis() - start);
 	}
 }

@@ -66,7 +66,7 @@ public class RefreshDeamon {
 		}
 	}
 
-	public static void main(String args) {
+	public static void main(String[] args) {
 		RefreshDeamon deamon = new RefreshDeamon();
 		deamon.StartDeamon();
 	}

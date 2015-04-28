@@ -16,7 +16,8 @@ public class EnvironmentInfo {
 	public static final String accountInfoDBName = "AccountInfo";
 	public static final String taskDBName = "RefreshTask";
 	
-	public static final String PhantomJSExecutablePath = "D:\\phantomjs.exe";
+//	public static final String PhantomJSExecutablePath = "D:\\phantomjs.exe";
+	public static final String PhantomJSExecutablePath = "/home/dtlvhyy/APPS/Phanjomjs/phantomjs/bin/phantomjs";
 	public static final String ParametersFilePath = "D:\\rawURL.txt";
 	
 	public static final String dbUser = "JavaOperator";
