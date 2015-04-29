@@ -222,29 +222,23 @@ public class RefreshThread implements Runnable {
 							} else {
 								freshColl.insertOne(article);
 							}
-							// MongoDatabase db = mongoClient
-							// .getDatabase(EnvironmentInfo.accountInfoDBName
-							// + EnvironmentInfo.dbNameSuffix);
-							// MongoCollection<Document> infoColl = db
-							// .getCollection("accountInfo");
-							// BasicDBObject query2 = new
-							// BasicDBObject("OpenID",
-							// profileInfo.getOpenid());
-							// Document cursor2 = infoColl.find(query2);
-							// if (cursor2.hasNext()) {
-							// ;
-							// } else {
-							// Document item = new Document();
-							// item.append("Name", profileInfo.getName())
-							// .append("Identity",
-							// profileInfo.getIdentity())
-							// .append("Info", profileInfo.getInfo())
-							// .append("OpenID",
-							// profileInfo.getOpenid())
-							// .append("WebUrl",
-							// profileInfo.getWebURL());
-							// infoColl.insertOne(item);
-							// }
+							MongoDatabase db = mongoClient.getDatabase(EnvironmentInfo.accountInfoDBName
+									+ EnvironmentInfo.dbNameSuffix);
+							MongoCollection<Document> infoColl = db
+									.getCollection("accountInfo");
+							Document find2 = infoColl.find(
+									eq("OpenID", this.profileInfo.getOpenid())).first();
+							if (find2 != null) {
+								;
+							} else {
+								Document account = new Document();
+								account.append("Name", profileInfo.getName())
+										.append("Identity", profileInfo.getIdentity())
+										.append("Info", profileInfo.getInfo())
+										.append("OpenID", profileInfo.getOpenid())
+										.append("WebUrl", profileInfo.getWebURL());
+								infoColl.insertOne(account);
+							}
 							mongoClient.close();
 
 							System.out.println(String.format(

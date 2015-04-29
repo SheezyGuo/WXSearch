@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -75,34 +76,41 @@ public class HotTopic {
 		ExecutorService pool = Executors.newFixedThreadPool(3);
 		while (iterator.hasNext()) {
 			String keyWord = iterator.next();
+			System.out.println("KeyWord:" + keyWord);
 			String utf8KeyWord = null;
 			try {
 				utf8KeyWord = URLEncoder.encode(keyWord, "utf-8");
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
+				continue;
 			}
 			if (utf8KeyWord != null) {
 				String url = String
 						.format("http://weixin.sogou.com/weixin?type=2&ie=utf-8&query=%s",
 								utf8KeyWord);
 				driver.get(url);
+//				System.out.println(driver.getPageSource());
 				List<WebElement> elements = driver.findElements(By
 						.id("weixin_account"));
+//				System.out.println(elements.size());
 				Iterator<WebElement> iter = elements.iterator();
 				while (iter.hasNext()) {
 					WebElement ele = iter.next();
 					String openID = ele.getAttribute("i");
 					ProfileInfo profileInfo = new ProfileInfo(null, openID);
+					profileInfo.init();
+					System.out.println(profileInfo.getIdentity()
+							+ profileInfo.getOpenid());
 					pool.execute(new RefreshThread(profileInfo));
 				}
 			}
-			pool.shutdown();
-			while (!pool.isTerminated()) {
-				try {
-					pool.awaitTermination(5, TimeUnit.SECONDS);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+		}
+		pool.shutdown();
+		while (!pool.isTerminated()) {
+			try {
+				pool.awaitTermination(5, TimeUnit.SECONDS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 		}
 		driver.quit();
@@ -110,10 +118,12 @@ public class HotTopic {
 
 	public void scheduledExtendAccoutnInfo() {
 		while (true) {
-			this.handleHotTopics(this.getHotTopics());
 			try {
+				this.handleHotTopics(this.getHotTopics());
 				Thread.sleep(6 * 3600 * 1000);
 			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -122,5 +132,28 @@ public class HotTopic {
 	public static void main(String[] args) {
 		HotTopic hotTopic = new HotTopic();
 		hotTopic.scheduledExtendAccoutnInfo();
+		
+		
+		
+//		WebDriver driver = null;
+//		String userAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36";
+//		PhantomJSDriverService.Builder builder = new PhantomJSDriverService.Builder();
+//		PhantomJSDriverService service = builder.usingPhantomJSExecutable(
+//				new File(EnvironmentInfo.PhantomJSExecutablePath)).build();
+//		DesiredCapabilities cap = DesiredCapabilities.phantomjs();
+//		cap.setCapability("phantomjs.page.settings.resourceTimeout", 20 * 1000);
+//		cap.setCapability("phantomjs.page.settings.userAgent",
+//				userAgent);
+//		driver = new PhantomJSDriver(service, cap);
+////		System.setProperty("webdriver.chrome.driver", "D:\\chromedriver.exe");
+////		driver=new ChromeDriver();
+//		driver.manage().timeouts().pageLoadTimeout(10, TimeUnit.MINUTES);
+//		driver.manage().timeouts().setScriptTimeout(10, TimeUnit.MINUTES);
+//		driver.get("http://weixin.sogou.com/weixin?type=2&ie=utf8&query=%E5%B0%BC%E6%B3%8A%E5%B0%94%E5%9C%B0%E9%9C%87");
+//		List<WebElement> elements = driver.findElements(By
+//				.id("weixin_account"));
+////		System.out.println(driver.getPageSource());
+//		System.out.println(elements.size());
+//		
 	}
 }

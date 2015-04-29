@@ -211,10 +211,10 @@ public class SimpleInfoCrawler implements Runnable {
 				freshColl.insertOne(article);
 			}
 
-			MongoDatabase db = mongoClient.getDatabase("AccountInfo"
+			MongoDatabase db = mongoClient.getDatabase(EnvironmentInfo.accountInfoDBName
 					+ EnvironmentInfo.dbNameSuffix);
 			MongoCollection<Document> infoColl = db
-					.getCollection("accountInfo");
+					.getCollection(EnvironmentInfo.accountInfoCollectionName);
 			Document find2 = infoColl.find(
 					eq("OpenID", this.profileInfo.getOpenid())).first();
 			if (find2 != null) {
